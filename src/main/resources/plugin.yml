@@ -1,0 +1,6 @@
+name: ${project.name}
+version: ${project.version}
+main: org.bitbucket.ucchy.glr.GakubuchiLockReloaded
+description: Gakubuchi Lock Reloaded
+author: ucchy
+
