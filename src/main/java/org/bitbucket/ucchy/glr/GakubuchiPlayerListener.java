@@ -34,6 +34,7 @@ public class GakubuchiPlayerListener implements Listener {
     public GakubuchiPlayerListener(LockDataManager manager) {
         this.manager = manager;
     }
+
     /**
      * かべかけ物が設置された時に呼び出されるイベント
      * @param event
@@ -182,7 +183,7 @@ public class GakubuchiPlayerListener implements Listener {
 
         // MEMO: このイベントハンドラは、
         //   額縁の中のアイテムを左クリックされた時、または、
-        //   矢による攻撃を受けた時に呼び出されるので、
+        //   飛来物（矢や雪球など）による攻撃を受けた時に呼び出されるので、
         //   所有者を確認して、所有者でなければメッセージを表示して操作をキャンセルする。
 
         // ロックデータ取得
