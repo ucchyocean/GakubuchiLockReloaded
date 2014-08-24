@@ -181,12 +181,12 @@ public class LockDataManager {
 
         // 削除を実行
         hangingMap.remove(hanging.getUniqueId());
-        if ( idMap.containsKey(ld.getUuid()) ) {
-            idMap.get(ld.getUuid()).remove(ld);
+        if ( idMap.containsKey(ld.getOwnerUuid()) ) {
+            idMap.get(ld.getOwnerUuid()).remove(ld);
         }
 
         // データを保存
-        saveData(ld.getUuid());
+        saveData(ld.getOwnerUuid());
     }
 
     /**

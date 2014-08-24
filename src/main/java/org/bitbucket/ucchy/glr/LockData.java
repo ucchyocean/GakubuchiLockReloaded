@@ -37,7 +37,7 @@ public class LockData {
     /**
      * @return uuid
      */
-    public UUID getUuid() {
+    public UUID getOwnerUuid() {
         return uuid;
     }
 
@@ -52,7 +52,7 @@ public class LockData {
      * 所有プレイヤーを返す
      * @return 所有プレイヤー
      */
-    public OfflinePlayer getPlayer() {
+    public OfflinePlayer getOwner() {
         return Bukkit.getOfflinePlayer(uuid);
     }
 

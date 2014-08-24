@@ -31,7 +31,7 @@ public class GakubuchiLockReloaded extends JavaPlugin {
 
         // リスナークラスを登録する
         getServer().getPluginManager().registerEvents(
-                new GakubuchiPlayerListener(manager), this);
+                new GakubuchiPlayerListener(this), this);
     }
 
     /**

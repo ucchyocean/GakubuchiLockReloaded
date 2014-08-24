@@ -1,6 +1,43 @@
 name: ${project.name}
 version: ${project.version}
 main: org.bitbucket.ucchy.glr.GakubuchiLockReloaded
-description: Gakubuchi Lock Reloaded
+description: 額縁や絵画のロックプラグイン
 author: ucchy
+
+commands:
+  gakubuchilock:
+    description: GakubuchiLockのユーザーコマンド
+    aliases: [gl, glock, gakubuchi]
+    usage: |
+    permission: gakubuchilock.command
+    permission-message: 'パーミッション "<permission>" が無いため、実行できません。'
+
+permissions:
+  gakubuchilock.command:
+    description: コマンドの使用権限
+    default: true
+  gakubuchilock.command.info:
+    description: infoコマンドの使用権限
+    default: true
+  gakubuchilock.command.reload:
+    description: reloadコマンドの使用権限
+    default: op
+  'gakubuchilock.command.*':
+    description: 全てのコマンドの使用権限
+    children:
+      gakubuchilock.command: true
+      gakubuchilock.command.info: true
+      gakubuchilock.command.reload: true
+  gakubuchilock.place:
+    description: 額縁や絵画を設置できる権限
+    default: true
+  gakubuchilock.admin:
+    description: ロックされた額縁や絵画を、所有者でなくても操作できる権限
+    default: op
+  'gakubuchilock.*':
+    description: GakubuchiLockの全てのパーミッション
+    children:
+      'gakubuchilock.command.*': true
+      gakubuchilock.place: true
+      gakubuchilock.admin: true
 
