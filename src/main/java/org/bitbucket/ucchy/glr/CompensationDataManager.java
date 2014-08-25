@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
@@ -86,6 +87,7 @@ public class CompensationDataManager {
         CompensationData data = new CompensationData();
 
         for ( String key : config.getKeys(false) ) {
+            if ( key.equals("name") ) continue;
             ItemStack item = config.getItemStack(key);
             data.addItem(item);
         }
@@ -103,14 +105,16 @@ public class CompensationDataManager {
     }
 
     /**
-     * 指定したオーナープレイヤーのデータを保存する
-     * @param uuid オーナープレイヤー
+     * 指定したプレイヤーのデータを保存する
+     * @param uuid プレイヤー
      */
     public void saveData(UUID uuid) {
 
         File file = new File(dataFolder, uuid.toString() + ".yml");
 
         YamlConfiguration config = new YamlConfiguration();
+
+        config.set("name", Bukkit.getOfflinePlayer(uuid).getName());
 
         CompensationData data = idMap.get(uuid);
         int counter = 0;
@@ -125,6 +129,22 @@ public class CompensationDataManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 指定したプレイヤーへの補償アイテムを加える
+     * @param uuid 対象のプレイヤーのUUID
+     * @param item 補償アイテム
+     */
+    public void addItem(UUID uuid, ItemStack item) {
+
+        if ( !idMap.containsKey(uuid) ) {
+            idMap.put(uuid, new CompensationData());
+        }
+
+        idMap.get(uuid).addItem(item);
+
+        saveData(uuid);
     }
 
     /**

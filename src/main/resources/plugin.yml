@@ -29,7 +29,10 @@ permissions:
       gakubuchilock.command.info: true
       gakubuchilock.command.reload: true
   gakubuchilock.place:
-    description: 額縁や絵画を設置できる権限
+    description: 額縁や絵画を新規に設置できる権限
+    default: true
+  gakubuchilock.break:
+    description: ロックされていない額縁や絵画を、剥がすことができる権限
     default: true
   gakubuchilock.admin:
     description: ロックされた額縁や絵画を、所有者でなくても操作できる権限

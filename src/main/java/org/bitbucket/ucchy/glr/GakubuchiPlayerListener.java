@@ -5,11 +5,9 @@
  */
 package org.bitbucket.ucchy.glr;
 
-import java.util.ArrayList;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Hanging;
 import org.bukkit.entity.ItemFrame;
@@ -25,6 +23,7 @@ import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * GakubuchiLockのリスナークラス
@@ -32,14 +31,16 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
  */
 public class GakubuchiPlayerListener implements Listener {
 
-    private LockDataManager manager;
+    private LockDataManager lockManager;
+    private CompensationDataManager compManager;
 
     /**
      * コンストラクタ
      * @param parent
      */
     public GakubuchiPlayerListener(GakubuchiLockReloaded parent) {
-        this.manager = parent.getLockDataManager();
+        this.lockManager = parent.getLockDataManager();
+        this.compManager = parent.getCompensationDataManager();
     }
 
     /**
@@ -53,16 +54,21 @@ public class GakubuchiPlayerListener implements Listener {
 
         // 権限がなければ、操作を禁止する
         if ( !event.getPlayer().hasPermission("gakubuchilock.place") ) {
-            event.setCancelled(true);
             event.getPlayer().sendMessage(ChatColor.RED + "You don't have a permission!!");
+            event.setCancelled(true);
             return;
         }
 
-        // TODO 同じ箇所に、既存のItemFrameまたはPaintingが存在しないか、確認する
+        // 同じLocationを持つ既存のItemFrameまたはPaintingが存在しないか、確認する。
         // 本プラグイン導入後は、同じ位置へのHangingの設置を認めない。
+        Location location = hanging.getLocation();
+        if ( GakubuchiUtility.getHangingFromLocation(location) != null ) {
+            event.setCancelled(true);
+            return;
+        }
 
         // 新しいロックデータを登録する
-        manager.addLockData(event.getPlayer().getUniqueId(), hanging);
+        lockManager.addLockData(event.getPlayer().getUniqueId(), hanging);
 
         String msg = String.format(
                 ChatColor.DARK_GREEN + "Create a Private %s successfully.",
@@ -86,9 +92,9 @@ public class GakubuchiPlayerListener implements Listener {
         Hanging hanging = event.getEntity();
 
         // 対象物のロックデータを取得する
-        LockData ld = manager.getLockDataByHanging(hanging);
+        LockData ld = lockManager.getLockDataByHanging(hanging);
 
-        // ロックデータが無いなら何もしない
+        // ロックデータが無い場合
         if ( ld == null ) {
             return;
         }
@@ -128,11 +134,6 @@ public class GakubuchiPlayerListener implements Listener {
 
             // OBSTRUCTION、PHYSICS、DEFAULTは、ここでまとめて処理する。
 
-            // イベントはキャンセルしつつ、エンティティを削除して、
-            // 何もドロップしないようにする。
-            event.setCancelled(true);
-            hanging.remove();
-
             // 所有者がオンラインなら、メッセージを流す
             if ( ld.getOwner().isOnline() ) {
                 String msg = String.format(
@@ -145,12 +146,23 @@ public class GakubuchiPlayerListener implements Listener {
                 ld.getOwner().getPlayer().sendMessage(msg);
             }
 
+            // 所有者にアイテムを補填する
+            if ( hanging instanceof Painting ) {
+                compManager.addItem(ld.getOwnerUuid(), new ItemStack(Material.PAINTING));
+            } else if ( hanging instanceof ItemFrame ) {
+                ItemFrame frame = (ItemFrame)hanging;
+                compManager.addItem(ld.getOwnerUuid(), new ItemStack(Material.ITEM_FRAME));
+                compManager.addItem(ld.getOwnerUuid(), frame.getItem());
+            }
+
+            // イベントはキャンセルしつつ、エンティティを削除して、
+            // 何もドロップしないようにする。
+            event.setCancelled(true);
+            hanging.remove();
+
             // ロックデータを削除する
-            manager.removeLockData(hanging);
-
-            // TODO: 所有者にアイテムを補填する
+            lockManager.removeLockData(hanging);
             break;
-
         }
     }
 
@@ -164,11 +176,21 @@ public class GakubuchiPlayerListener implements Listener {
         Hanging hanging = event.getEntity();
 
         // 対象物のロックデータを取得する
-        LockData ld = manager.getLockDataByHanging(hanging);
+        LockData ld = lockManager.getLockDataByHanging(hanging);
 
-        // ロックデータが無いなら何もしない
+        // ロックデータが無い場合
         if ( ld == null ) {
-            return;
+
+            // 権限がなければ、操作を禁止する
+            if ( event.getRemover() instanceof Player ) {
+                Player remover = (Player)event.getRemover();
+                if ( !remover.hasPermission("gakubuchilock.break") ) {
+                    remover.sendMessage(ChatColor.RED + "You don't have a permission!!");
+                    event.setCancelled(true);
+                }
+            }
+
+            return; // ロックデータが無い場合は、ここで処理終了。
         }
 
         // 操作者取得
@@ -179,18 +201,6 @@ public class GakubuchiPlayerListener implements Listener {
             if ( ((Projectile)event.getRemover()).getShooter() instanceof Player ) {
                 remover = (Player)((Projectile)event.getRemover()).getShooter();
             }
-        }
-
-        // TODO debug
-        if ( hanging.getType() == EntityType.PAINTING ) {
-            Painting painting = (Painting)hanging;
-            System.out.println(String.format("(%d, %d, %d) - (%d, %d)",
-                    painting.getLocation().getBlockX(),
-                    painting.getLocation().getBlockY(),
-                    painting.getLocation().getBlockZ(),
-                    painting.getArt().getBlockWidth(),
-                    painting.getArt().getBlockHeight()
-                    ));
         }
 
         // 所有者でなくて、管理者でもなければ、操作を禁止する
@@ -213,7 +223,7 @@ public class GakubuchiPlayerListener implements Listener {
         remover.sendMessage(msg);
 
         // ロック情報を削除する
-        manager.removeLockData(hanging);
+        lockManager.removeLockData(hanging);
     }
 
     /**
@@ -234,7 +244,7 @@ public class GakubuchiPlayerListener implements Listener {
 
         // ロックデータ取得
         Hanging hanging = (Hanging)event.getRightClicked();
-        LockData ld = manager.getLockDataByHanging(hanging);
+        LockData ld = lockManager.getLockDataByHanging(hanging);
 
         // 所有者でなくて、管理者でもなければ、操作を禁止する
         if ( ld != null && !ld.getOwnerUuid().equals(event.getPlayer().getUniqueId()) ||
@@ -267,7 +277,7 @@ public class GakubuchiPlayerListener implements Listener {
 
         // ロックデータ取得
         Hanging hanging = (Hanging)event.getEntity();
-        LockData ld = manager.getLockDataByHanging(hanging);
+        LockData ld = lockManager.getLockDataByHanging(hanging);
 
         // ロックデータが無いなら何もしない
         if ( ld == null ) {
@@ -307,12 +317,12 @@ public class GakubuchiPlayerListener implements Listener {
 
         Location location = event.getBlockPlaced().getLocation();
 
-        // 指定された場所にItemFrameがないか確認する
-        ItemFrame frame = getFrameFromLocation(location);
-        if ( frame != null ) {
+        // 指定された場所にHangingがないか確認する
+        Hanging hanging = GakubuchiUtility.getHangingFromLocation(location);
+        if ( hanging != null ) {
 
             // ロックデータ取得
-            LockData ld = manager.getLockDataByHanging(frame);
+            LockData ld = lockManager.getLockDataByHanging(hanging);
 
             // ロックデータが無いなら何もしない
             if ( ld == null ) {
@@ -329,99 +339,11 @@ public class GakubuchiPlayerListener implements Listener {
                 if ( player != null ) {
                     String msg = String.format(
                             ChatColor.RED + "This %s is locked with a magical spell.",
-                            frame.getType().name());
+                            hanging.getType().name());
                     player.sendMessage(msg);
                 }
                 return;
             }
         }
-
-        // 周囲にPaintingがないか確認する
-        for ( Painting painting : getNearbyPainting(location, 3.0) ) {
-
-            // ロックデータ取得
-            LockData ld = manager.getLockDataByHanging(painting);
-
-            // ロックデータが無いなら何もしない
-            if ( ld == null ) {
-                return;
-            }
-
-            // TODO 設置位置がPaintingにかぶっているかどうか確認する
-            // Paintingの設置範囲が正確に取得できないので、なかなか難しい・・・
-
-//            // 設置者取得、エンダーマンならnullになる
-//            Player player = event.getPlayer();
-//
-//            // 所有者でなければ、ブロック設置を禁止する（管理権限があってもNGとする）。
-//            if ( player == null || !ld.getOwnerUuid().equals(player.getUniqueId()) ) {
-//                event.setBuild(false);
-//                event.setCancelled(true);
-//                if ( player != null ) {
-//                    String msg = String.format(
-//                            ChatColor.RED + "This %s is locked with a magical spell.",
-//                            painting.getType().name());
-//                    player.sendMessage(msg);
-//                }
-//                return;
-//            }
-        }
-    }
-
-    /**
-     * 指定された地点の周囲にあるPaintingを取得する
-     * @param location 基点
-     * @param range 基点から検索する距離
-     * @return 検索されたHanging
-     */
-    private ArrayList<Painting> getNearbyPainting(Location location, double range) {
-
-        // TODO: Bukkit PR BUKKIT-3868 がマージされたら、
-        // Location.getNearbyEntities が実行できるようになるので、実装しなおすこと。
-
-        // NOTE: Locationクラスのdistanceは、呼び出すたびに平方根が計算されるため、
-        // 繰り返し呼び出すとコストがかかる。
-        // そのため、比較対象のrangeをあらかじめ二乗しておき、distanceSquareと比較する。
-
-        ArrayList<Painting> paintings = new ArrayList<Painting>();
-        World world = location.getWorld();
-        double rangeSqr = range * range;
-        for ( Painting painting : world.getEntitiesByClass(Painting.class) ) {
-            if ( location.distanceSquared(painting.getLocation()) < rangeSqr ) {
-                paintings.add(painting);
-            }
-        }
-        return paintings;
-    }
-
-    /**
-     * 指定された地点にあるItemFrameを取得する
-     * @param location 地点
-     * @return ItemFrame、無かった場合はnull
-     */
-    private ItemFrame getFrameFromLocation(Location location) {
-
-        // TODO: Bukkit PR BUKKIT-3868 がマージされたら、
-        // Location.getNearbyEntities が実行できるようになるので、実装しなおすこと。
-
-        World world = location.getWorld();
-        for ( ItemFrame itemframe : world.getEntitiesByClass(ItemFrame.class) ) {
-            if ( isSameLocation(location, itemframe.getLocation()) ) {
-                return itemframe;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * 2つのLocationが同じブロックかどうかを確認する
-     * @param loc1
-     * @param loc2
-     * @return
-     */
-    private boolean isSameLocation(Location loc1, Location loc2) {
-        return loc1.getBlockX() == loc2.getBlockX() &&
-                loc1.getBlockY() == loc2.getBlockY() &&
-                loc1.getBlockZ() == loc2.getBlockZ();
     }
 }

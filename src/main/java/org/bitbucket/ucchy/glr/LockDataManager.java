@@ -100,6 +100,40 @@ public class LockDataManager {
     }
 
     /**
+     * プレイヤーファイルから、ロックデータをロードする
+     * @param file プレイヤーファイル
+     * @param uuid プレイヤーのUUID（あらかじめ取得したもの）
+     * @param hangings 全ワールドのHanging（あらかじめ取得したもの）
+     * @return ロードされたロックデータ
+     */
+    private ArrayList<LockData> loadLockData(File file, UUID uuid,
+            HashMap<String, Collection<Hanging>> hangings) {
+
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        ArrayList<LockData> data = new ArrayList<LockData>();
+
+        for ( String key : config.getKeys(false) ) {
+
+            if ( key.equals("name") ) continue;
+
+            Location location = getLocationFromDescription(key);
+            if ( location == null ) {
+                continue;
+            }
+
+            Hanging hanging = getHangingFromLocation(location, hangings);
+
+            if ( hanging == null ) {
+                continue;
+            }
+
+            data.add(new LockData(uuid, hanging));
+        }
+
+        return data;
+    }
+
+    /**
      * 全てのデータを保存する
      */
     public void saveAllData() {
@@ -118,10 +152,12 @@ public class LockDataManager {
 
         YamlConfiguration config = new YamlConfiguration();
 
+        config.set("name", Bukkit.getOfflinePlayer(uuid).getName());
+
         ArrayList<LockData> datas = idMap.get(uuid);
         for ( LockData data : datas ) {
             String desc = getDescriptionFromLocation(data.getLocation());
-            config.createSection(desc);
+            config.set(desc, data.getHanging().getType().name());
         }
 
         try {
@@ -187,37 +223,6 @@ public class LockDataManager {
 
         // データを保存
         saveData(ld.getOwnerUuid());
-    }
-
-    /**
-     * プレイヤーファイルから、ロックデータをロードする
-     * @param file プレイヤーファイル
-     * @param uuid プレイヤーのUUID（あらかじめ取得したもの）
-     * @param hangings 全ワールドのHanging（あらかじめ取得したもの）
-     * @return ロードされたロックデータ
-     */
-    private ArrayList<LockData> loadLockData(File file, UUID uuid,
-            HashMap<String, Collection<Hanging>> hangings) {
-
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-        ArrayList<LockData> data = new ArrayList<LockData>();
-
-        for ( String key : config.getKeys(false) ) {
-
-            Location location = getLocationFromDescription(key);
-            if ( location == null ) {
-                continue;
-            }
-
-            Hanging hanging = getHangingFromLocation(location, hangings);
-            if ( hanging == null ) {
-                continue;
-            }
-
-            data.add(new LockData(uuid, hanging));
-        }
-
-        return data;
     }
 
     /**
@@ -296,7 +301,7 @@ public class LockDataManager {
      * @return UUIDかどうか
      */
     private static boolean isUUID(String source) {
-        return source.matches("[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}");
+        return source.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
     }
 
     /**
