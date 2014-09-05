@@ -33,6 +33,7 @@ public class GakubuchiPlayerListener implements Listener {
 
     private LockDataManager lockManager;
     private CompensationDataManager compManager;
+    private GakubuchiLockConfig config;
 
     /**
      * コンストラクタ
@@ -41,6 +42,7 @@ public class GakubuchiPlayerListener implements Listener {
     public GakubuchiPlayerListener(GakubuchiLockReloaded parent) {
         this.lockManager = parent.getLockDataManager();
         this.compManager = parent.getCompensationDataManager();
+        this.config = parent.getGLConfig();
     }
 
     /**
@@ -66,6 +68,9 @@ public class GakubuchiPlayerListener implements Listener {
             event.setCancelled(true);
             return;
         }
+
+        // 設置数制限を超える場合は、設置を許可しない。
+        // TODO
 
         // 新しいロックデータを登録する
         lockManager.addLockData(event.getPlayer().getUniqueId(), hanging);

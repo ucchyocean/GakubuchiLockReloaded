@@ -226,6 +226,20 @@ public class LockDataManager {
     }
 
     /**
+     * 指定したプレイヤーのロック数を返す
+     * @param uuid プレイヤー
+     * @return ロック数
+     */
+    public int getPlayerLockNum(UUID uuid) {
+
+        if ( idMap.containsKey(uuid) ) {
+            return idMap.get(uuid).size();
+        }
+        return 0;
+    }
+
+
+    /**
      * 指定された場所に存在するHangingを取得する
      * @param location 場所
      * @param hangings 全ワールドのHanging（あらかじめ取得したもの）

@@ -4,8 +4,8 @@
 # @copyright  Copyright ucchy 2014
 
 # 1人あたりのItemFrameの設置数上限です。-1で無限大に設定することができます。
-itemFrameLimit: -1
+itemFrameLimit: 100
 
 # 1人あたりのPaintingの設置数上限です。-1で無限大に設定することができます。
-paintingLimit: -1
+paintingLimit: 100
 

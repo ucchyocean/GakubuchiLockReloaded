@@ -20,6 +20,7 @@ public class GakubuchiLockReloaded extends JavaPlugin {
 
     private LockDataManager lockManager;
     private CompensationDataManager compManager;
+    private GakubuchiLockConfig config;
 
     /**
      * プラグインが有効化されたときに呼び出されるメソッド
@@ -33,6 +34,9 @@ public class GakubuchiLockReloaded extends JavaPlugin {
                 new File(getDataFolder(), DATA_FOLDER));
         compManager = new CompensationDataManager(
                 new File(getDataFolder(), COMPENSATION_FOLDER));
+
+        // コンフィグをロードする
+        config = new GakubuchiLockConfig(this);
 
         // リスナークラスを登録する
         getServer().getPluginManager().registerEvents(
@@ -53,5 +57,21 @@ public class GakubuchiLockReloaded extends JavaPlugin {
      */
     public CompensationDataManager getCompensationDataManager() {
         return compManager;
+    }
+
+    /**
+     * コンフィグデータを返す
+     * @return
+     */
+    public GakubuchiLockConfig getGLConfig() {
+        return config;
+    }
+
+    /**
+     * このプラグインのJarファイルを返す
+     * @return Jarファイル
+     */
+    protected File getJarFile() {
+        return getFile();
     }
 }
