@@ -63,4 +63,12 @@ public class LockData {
     public Location getLocation() {
         return hanging.getLocation();
     }
+
+    /**
+     * 文字列表現を返す。デバッグ用
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+        return String.format("LockData{uuid=%s,hanging=%s}", uuid, hanging);
+    }
 }

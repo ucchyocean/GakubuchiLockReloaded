@@ -16,10 +16,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class GakubuchiLockReloaded extends JavaPlugin {
 
     private static final String DATA_FOLDER = "data";
-    private static final String COMPENSATION_FOLDER = "compensation";
 
     private LockDataManager lockManager;
-    private CompensationDataManager compManager;
     private GakubuchiLockConfig config;
 
     /**
@@ -32,8 +30,6 @@ public class GakubuchiLockReloaded extends JavaPlugin {
         // マネージャを生成し、データをロードする
         lockManager = new LockDataManager(
                 new File(getDataFolder(), DATA_FOLDER));
-        compManager = new CompensationDataManager(
-                new File(getDataFolder(), COMPENSATION_FOLDER));
 
         // コンフィグをロードする
         config = new GakubuchiLockConfig(this);
@@ -49,14 +45,6 @@ public class GakubuchiLockReloaded extends JavaPlugin {
      */
     public LockDataManager getLockDataManager() {
         return lockManager;
-    }
-
-    /**
-     * 補償アイテムデータマネージャを返す
-     * @return 補償アイテムデータマネージャ
-     */
-    public CompensationDataManager getCompensationDataManager() {
-        return compManager;
     }
 
     /**

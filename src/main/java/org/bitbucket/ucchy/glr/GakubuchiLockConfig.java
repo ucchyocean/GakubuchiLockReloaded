@@ -28,7 +28,6 @@ public class GakubuchiLockConfig {
     private GakubuchiLockReloaded parent;
 
     private int itemFrameLimit;
-    private int paintingLimit;
 
     /**
      * コンストラクタ
@@ -59,7 +58,6 @@ public class GakubuchiLockConfig {
         FileConfiguration conf = parent.getConfig();
 
         itemFrameLimit = conf.getInt("itemFrameLimit", 100);
-        paintingLimit = conf.getInt("paintingLimit", 100);
     }
 
     /**
@@ -67,12 +65,6 @@ public class GakubuchiLockConfig {
      */
     public int getItemFrameLimit() {
         return itemFrameLimit;
-    }
-    /**
-     * @return paintingLimit
-     */
-    public int getPaintingLimit() {
-        return paintingLimit;
     }
 
     /**

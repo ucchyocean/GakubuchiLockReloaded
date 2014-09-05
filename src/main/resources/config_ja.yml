@@ -6,6 +6,3 @@
 # 1人あたりのItemFrameの設置数上限です。-1で無限大に設定することができます。
 itemFrameLimit: 100
 
-# 1人あたりのPaintingの設置数上限です。-1で無限大に設定することができます。
-paintingLimit: 100
-

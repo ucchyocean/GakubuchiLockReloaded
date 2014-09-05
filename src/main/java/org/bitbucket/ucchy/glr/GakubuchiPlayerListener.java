@@ -8,10 +8,10 @@ package org.bitbucket.ucchy.glr;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Hanging;
 import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -23,7 +23,6 @@ import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * GakubuchiLockのリスナークラス
@@ -32,7 +31,6 @@ import org.bukkit.inventory.ItemStack;
 public class GakubuchiPlayerListener implements Listener {
 
     private LockDataManager lockManager;
-    private CompensationDataManager compManager;
     private GakubuchiLockConfig config;
 
     /**
@@ -41,7 +39,6 @@ public class GakubuchiPlayerListener implements Listener {
      */
     public GakubuchiPlayerListener(GakubuchiLockReloaded parent) {
         this.lockManager = parent.getLockDataManager();
-        this.compManager = parent.getCompensationDataManager();
         this.config = parent.getGLConfig();
     }
 
@@ -54,23 +51,35 @@ public class GakubuchiPlayerListener implements Listener {
 
         Hanging hanging = event.getEntity();
 
+        // 額縁でなければ無視する
+        if ( !(hanging instanceof ItemFrame) ) {
+            return;
+        }
+
         // 権限がなければ、操作を禁止する
         if ( !event.getPlayer().hasPermission("gakubuchilock.place") ) {
-            event.getPlayer().sendMessage(ChatColor.RED + "You don't have a permission!!");
+            event.getPlayer().sendMessage(
+                    ChatColor.RED + "You don't have a permission!!");
             event.setCancelled(true);
             return;
         }
 
-        // 同じLocationを持つ既存のItemFrameまたはPaintingが存在しないか、確認する。
-        // 本プラグイン導入後は、同じ位置へのHangingの設置を認めない。
+        // 同じLocationを持つ既存のItemFrameが存在しないか、確認する。
+        // 本プラグイン導入後は、同じ位置へのItemFrameの設置を認めない。
         Location location = hanging.getLocation();
-        if ( GakubuchiUtility.getHangingFromLocation(location) != null ) {
+        if ( GakubuchiUtility.getFrameFromLocation(location) != null ) {
             event.setCancelled(true);
             return;
         }
 
         // 設置数制限を超える場合は、設置を許可しない。
-        // TODO
+        if ( lockManager.getPlayerLockNum(event.getPlayer().getUniqueId()) >
+                config.getItemFrameLimit() ) {
+            event.getPlayer().sendMessage(
+                    ChatColor.RED + "You exceeded restrictions of ItemFrame!!");
+            event.setCancelled(true);
+            return;
+        }
 
         // 新しいロックデータを登録する
         lockManager.addLockData(event.getPlayer().getUniqueId(), hanging);
@@ -88,13 +97,18 @@ public class GakubuchiPlayerListener implements Listener {
     @EventHandler(priority=EventPriority.HIGHEST)
     public void onHangingBreak(HangingBreakEvent event) {
 
+        Hanging hanging = event.getEntity();
+
+        // 額縁でなければ無視する
+        if ( !(hanging instanceof ItemFrame) ) {
+            return;
+        }
+
         // エンティティによる破壊なら、HangingBreakByEntityEventで処理するので、
         // ここでは何もしない。
         if ( event instanceof HangingBreakByEntityEvent ) {
             return;
         }
-
-        Hanging hanging = event.getEntity();
 
         // 対象物のロックデータを取得する
         LockData ld = lockManager.getLockDataByHanging(hanging);
@@ -123,7 +137,14 @@ public class GakubuchiPlayerListener implements Listener {
             // 額縁のある場所が、ブロックに塞がれた場合。
             // CB1.7.10-R0.1では、Hangingの設置方向によっては、
             // なぜかOBSTRUCTIONではなくPHYSICSになる（不具合？）。
-            // fall through
+
+            // hangingにかぶさる位置のブロックをAIRにし、イベントをキャンセルする
+            Block obst = hanging.getLocation().getBlock();
+            obst.setType(Material.AIR);
+
+            event.setCancelled(true);
+            break;
+
         case PHYSICS:
             // 額縁のかかっている壁のブロックが無くなったり、
             // 壁掛け物として不自然な状態になったりしたとき、
@@ -139,34 +160,14 @@ public class GakubuchiPlayerListener implements Listener {
 
             // OBSTRUCTION、PHYSICS、DEFAULTは、ここでまとめて処理する。
 
-            // 所有者がオンラインなら、メッセージを流す
-            if ( ld.getOwner().isOnline() ) {
-                String msg = String.format(
-                        ChatColor.RED + "Your %s(%s,%d,%d,%d) was broken!",
-                        hanging.getType().name(),
-                        hanging.getLocation().getWorld().getName(),
-                        hanging.getLocation().getBlockX(),
-                        hanging.getLocation().getBlockY(),
-                        hanging.getLocation().getBlockZ() );
-                ld.getOwner().getPlayer().sendMessage(msg);
-            }
+            // 設置されていたであろう壁の方向に石を作って、壁を復活させ、
+            // イベントをキャンセルする。
+            obst = hanging.getLocation().getBlock();
+            obst.setType(Material.AIR);
+            Block wall = obst.getRelative(hanging.getAttachedFace());
+            wall.setType(Material.STONE);
 
-            // 所有者にアイテムを補填する
-            if ( hanging instanceof Painting ) {
-                compManager.addItem(ld.getOwnerUuid(), new ItemStack(Material.PAINTING));
-            } else if ( hanging instanceof ItemFrame ) {
-                ItemFrame frame = (ItemFrame)hanging;
-                compManager.addItem(ld.getOwnerUuid(), new ItemStack(Material.ITEM_FRAME));
-                compManager.addItem(ld.getOwnerUuid(), frame.getItem());
-            }
-
-            // イベントはキャンセルしつつ、エンティティを削除して、
-            // 何もドロップしないようにする。
             event.setCancelled(true);
-            hanging.remove();
-
-            // ロックデータを削除する
-            lockManager.removeLockData(hanging);
             break;
         }
     }
@@ -179,6 +180,11 @@ public class GakubuchiPlayerListener implements Listener {
     public void onHangingBreakByEntity(HangingBreakByEntityEvent event) {
 
         Hanging hanging = event.getEntity();
+
+        // 額縁でなければ無視する
+        if ( !(hanging instanceof ItemFrame) ) {
+            return;
+        }
 
         // 対象物のロックデータを取得する
         LockData ld = lockManager.getLockDataByHanging(hanging);
@@ -322,8 +328,9 @@ public class GakubuchiPlayerListener implements Listener {
 
         Location location = event.getBlockPlaced().getLocation();
 
-        // 指定された場所にHangingがないか確認する
-        Hanging hanging = GakubuchiUtility.getHangingFromLocation(location);
+        // 指定された場所にItemFrameがないか確認する
+        Hanging hanging = GakubuchiUtility.getFrameFromLocation(location);
+
         if ( hanging != null ) {
 
             // ロックデータ取得
@@ -334,21 +341,16 @@ public class GakubuchiPlayerListener implements Listener {
                 return;
             }
 
-            // 設置者取得、エンダーマンならnullになる
-            Player player = event.getPlayer();
-
-            // 所有者でなければ、ブロック設置を禁止する（管理権限があってもNGとする）。
-            if ( player == null || !ld.getOwnerUuid().equals(player.getUniqueId()) ) {
-                event.setBuild(false);
-                event.setCancelled(true);
-                if ( player != null ) {
-                    String msg = String.format(
-                            ChatColor.RED + "This %s is locked with a magical spell.",
-                            hanging.getType().name());
-                    player.sendMessage(msg);
-                }
-                return;
+            // ブロック設置を禁止する（管理権限があっても、所有者でも、NGとする）。
+            event.setBuild(false);
+            event.setCancelled(true);
+            if ( event.getPlayer() != null ) {
+                String msg = String.format(
+                        ChatColor.RED + "This %s is locked with a magical spell.",
+                        hanging.getType().name());
+                event.getPlayer().sendMessage(msg);
             }
+            return;
         }
     }
 }

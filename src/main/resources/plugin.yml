@@ -1,15 +1,48 @@
 name: ${project.name}
 version: ${project.version}
 main: org.bitbucket.ucchy.glr.GakubuchiLockReloaded
-description: 額縁や絵画のロックプラグイン
+description: 額縁ロックプラグイン
 author: ucchy
 
 commands:
   gakubuchilock:
     description: GakubuchiLockのユーザーコマンド
-    aliases: [gl, glock, gakubuchi]
+    aliases: [gl]
     usage: |
+           /<command> info - 額縁のロック情報詳細を参照します。
+           /<command> limits - 現在の額縁ロック数と、上限数を表示します。
+           /<command> private - 額縁をロックします。
+           /<command> remove - 額縁のロックを削除します。
+           /<command> reload - 設定ファイルを再読み込みします。
     permission: gakubuchilock.command
+    permission-message: 'パーミッション "<permission>" が無いため、実行できません。'
+
+  ginfo:
+    description: 額縁のロック情報詳細を参照するコマンド
+    usage: |
+           /<command> - 額縁のロック情報詳細を参照します。
+    permission: gakubuchilock.command.info
+    permission-message: 'パーミッション "<permission>" が無いため、実行できません。'
+
+  glimits:
+    description: 現在の額縁ロック数と、上限数を表示します。
+    usage: |
+           /<command> - 現在の額縁ロック数と、上限数を表示します。
+    permission: gakubuchilock.command.limits
+    permission-message: 'パーミッション "<permission>" が無いため、実行できません。'
+
+  gprivate:
+    description: 額縁をロックします。
+    usage: |
+           /<command> - 額縁をロックします。
+    permission: gakubuchilock.command.private
+    permission-message: 'パーミッション "<permission>" が無いため、実行できません。'
+
+  gremove:
+    description: 額縁のロックを削除します。
+    usage: |
+           /<command> - 額縁のロックを削除します。
+    permission: gakubuchilock.command.gremove
     permission-message: 'パーミッション "<permission>" が無いため、実行できません。'
 
 permissions:
@@ -19,6 +52,15 @@ permissions:
   gakubuchilock.command.info:
     description: infoコマンドの使用権限
     default: true
+  gakubuchilock.command.limits:
+    description: limitsコマンドの使用権限
+    default: true
+  gakubuchilock.command.private:
+    description: privateコマンドの使用権限
+    default: true
+  gakubuchilock.command.remove:
+    description: removeコマンドの使用権限
+    default: true
   gakubuchilock.command.reload:
     description: reloadコマンドの使用権限
     default: op
@@ -27,20 +69,29 @@ permissions:
     children:
       gakubuchilock.command: true
       gakubuchilock.command.info: true
+      gakubuchilock.command.limits: true
+      gakubuchilock.command.private: true
+      gakubuchilock.command.remove: true
       gakubuchilock.command.reload: true
-  gakubuchilock.place:
-    description: 額縁や絵画を新規に設置できる権限
+
+  gakubuchilock.entity.place:
+    description: 額縁を新規に設置できる権限
     default: true
-  gakubuchilock.break:
-    description: ロックされていない額縁や絵画を、剥がすことができる権限
+  gakubuchilock.entity.break:
+    description: ロックされていない額縁を、剥がすことができる権限
     default: true
-  gakubuchilock.admin:
-    description: ロックされた額縁や絵画を、所有者でなくても操作できる権限
+  gakubuchilock.entity.admin:
+    description: ロックされた額縁を、所有者でなくても操作できる権限
     default: op
+  'gakubuchilock.entity.*':
+    description: 全てのエンティティの操作権限
+    children:
+      gakubuchilock.entity.place: true
+      gakubuchilock.entity.break: true
+      gakubuchilock.entity.admin: true
+
   'gakubuchilock.*':
     description: GakubuchiLockの全てのパーミッション
     children:
       'gakubuchilock.command.*': true
-      gakubuchilock.place: true
-      gakubuchilock.admin: true
-
+      'gakubuchilock.entity.*': true
