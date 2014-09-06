@@ -30,6 +30,9 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
  */
 public class GakubuchiPlayerListener implements Listener {
 
+    private static final String PERMISSION = "gakubuchilock.entity";
+
+    private GakubuchiLockReloaded parent;
     private LockDataManager lockManager;
     private GakubuchiLockConfig config;
 
@@ -38,6 +41,7 @@ public class GakubuchiPlayerListener implements Listener {
      * @param parent
      */
     public GakubuchiPlayerListener(GakubuchiLockReloaded parent) {
+        this.parent = parent;
         this.lockManager = parent.getLockDataManager();
         this.config = parent.getGLConfig();
     }
@@ -57,9 +61,9 @@ public class GakubuchiPlayerListener implements Listener {
         }
 
         // 権限がなければ、操作を禁止する
-        if ( !event.getPlayer().hasPermission("gakubuchilock.place") ) {
+        if ( !event.getPlayer().hasPermission(PERMISSION + ".place") ) {
             event.getPlayer().sendMessage(
-                    ChatColor.RED + "You don't have a permission!!");
+                    ChatColor.RED + "パーミッションが無いため、設置できません。");
             event.setCancelled(true);
             return;
         }
@@ -76,18 +80,14 @@ public class GakubuchiPlayerListener implements Listener {
         if ( lockManager.getPlayerLockNum(event.getPlayer().getUniqueId()) >
                 config.getItemFrameLimit() ) {
             event.getPlayer().sendMessage(
-                    ChatColor.RED + "You exceeded restrictions of ItemFrame!!");
+                    ChatColor.RED + "あなたは設置制限数を超えたため、額縁を設置できません。");
             event.setCancelled(true);
             return;
         }
 
         // 新しいロックデータを登録する
         lockManager.addLockData(event.getPlayer().getUniqueId(), hanging);
-
-        String msg = String.format(
-                ChatColor.DARK_GREEN + "Create a Private %s successfully.",
-                event.getEntity().getType().name());
-        event.getPlayer().sendMessage(msg);
+        event.getPlayer().sendMessage(ChatColor.GREEN + "プライベート額縁を作成しました。");
     }
 
     /**
@@ -195,8 +195,8 @@ public class GakubuchiPlayerListener implements Listener {
             // 権限がなければ、操作を禁止する
             if ( event.getRemover() instanceof Player ) {
                 Player remover = (Player)event.getRemover();
-                if ( !remover.hasPermission("gakubuchilock.break") ) {
-                    remover.sendMessage(ChatColor.RED + "You don't have a permission!!");
+                if ( !remover.hasPermission(PERMISSION + ".break") ) {
+                    remover.sendMessage(ChatColor.RED + "パーミッションが無いため、破壊できません。");
                     event.setCancelled(true);
                 }
             }
@@ -216,11 +216,11 @@ public class GakubuchiPlayerListener implements Listener {
 
         // 所有者でなくて、管理者でもなければ、操作を禁止する
         if ( remover == null || !ld.getOwnerUuid().equals(remover.getUniqueId()) ||
-                !remover.hasPermission("gakubuchilock.admin") ) {
+                !remover.hasPermission(PERMISSION + ".admin") ) {
             event.setCancelled(true);
             if ( remover != null ) {
                 String msg = String.format(
-                        ChatColor.RED + "This %s is locked with a magical spell.",
+                        ChatColor.RED + "この額縁はロックされています。",
                         hanging.getType().name());
                 remover.sendMessage(msg);
             }
@@ -229,7 +229,7 @@ public class GakubuchiPlayerListener implements Listener {
 
         // メッセージを出す
         String msg = String.format(
-                ChatColor.RED + "%s unregistered.",
+                ChatColor.RED + "額縁のロック情報が削除されました。",
                 hanging.getType().name());
         remover.sendMessage(msg);
 
@@ -259,10 +259,10 @@ public class GakubuchiPlayerListener implements Listener {
 
         // 所有者でなくて、管理者でもなければ、操作を禁止する
         if ( ld != null && !ld.getOwnerUuid().equals(event.getPlayer().getUniqueId()) ||
-                !event.getPlayer().hasPermission("gakubuchilock.admin") ) {
+                !event.getPlayer().hasPermission(PERMISSION + ".admin") ) {
             event.setCancelled(true);
             String msg = String.format(
-                    ChatColor.RED + "This %s is locked with a magical spell.",
+                    ChatColor.RED + "この額縁はロックされています。",
                     hanging.getType().name());
             event.getPlayer().sendMessage(msg);
             return;
@@ -280,6 +280,104 @@ public class GakubuchiPlayerListener implements Listener {
         if ( event.getEntity().getType() != EntityType.ITEM_FRAME ) {
             return;
         }
+
+        // ==== 事前コマンドが実行されている場合の処理 ====
+
+        if ( event.getDamager() instanceof Player ) {
+            Player damager = (Player)event.getDamager();
+
+            if ( damager.hasMetadata(GakubuchiLockCommand.META_INFO_COMMAND) ) {
+                damager.removeMetadata(GakubuchiLockCommand.META_INFO_COMMAND, parent);
+                event.setCancelled(true);
+
+                // ロックデータ取得
+                Hanging hanging = (Hanging)event.getEntity();
+                LockData ld = lockManager.getLockDataByHanging(hanging);
+
+                if ( ld == null ) {
+                    damager.sendMessage(ChatColor.RED + "この額縁はロックされていません。");
+                    return;
+                } else {
+                    String owner;
+                    if ( ld.getOwner() == null ) {
+                        owner = "不明";
+                    } else {
+                        owner = ld.getOwner().getName();
+                    }
+                    damager.sendMessage(String.format(
+                            "オーナー: " + ChatColor.GREEN + "%s(%s)", owner, ld.getOwnerUuid().toString()));
+                    return;
+                }
+
+            } else if ( damager.hasMetadata(GakubuchiLockCommand.META_PRIVATE_COMMAND) ) {
+                damager.removeMetadata(GakubuchiLockCommand.META_PRIVATE_COMMAND, parent);
+                event.setCancelled(true);
+
+                // ロックデータ取得
+                Hanging hanging = (Hanging)event.getEntity();
+                LockData ld = lockManager.getLockDataByHanging(hanging);
+
+                if ( ld == null ) {
+
+                    // 権限がなければ、操作を禁止する
+                    if ( !damager.hasPermission(PERMISSION + ".place") &&
+                            !damager.hasPermission(PERMISSION + ".admin") ) {
+                        damager.sendMessage(
+                                ChatColor.RED + "パーミッションが無いため、ロックできません。");
+                        return;
+                    }
+
+                    // 設置数制限を超える場合は、設置を許可しない。
+                    if ( lockManager.getPlayerLockNum(damager.getUniqueId()) >
+                            config.getItemFrameLimit() ) {
+                        damager.sendMessage(
+                                ChatColor.RED + "あなたは設置制限数を超えたため、ロックを追加できません。");
+                        return;
+                    }
+
+                    // 新しいロックデータを登録する
+                    lockManager.addLockData(damager.getUniqueId(), hanging);
+                    damager.sendMessage(ChatColor.GREEN + "プライベート額縁を作成しました。");
+                    return;
+
+                } else {
+                    damager.sendMessage(ChatColor.RED + "この額縁は既にロックされています。");
+                    return;
+                }
+
+            } else if ( damager.hasMetadata(GakubuchiLockCommand.META_REMOVE_COMMAND) ) {
+                damager.removeMetadata(GakubuchiLockCommand.META_REMOVE_COMMAND, parent);
+                event.setCancelled(true);
+
+                // ロックデータ取得
+                Hanging hanging = (Hanging)event.getEntity();
+                LockData ld = lockManager.getLockDataByHanging(hanging);
+
+                if ( ld == null ) {
+                    damager.sendMessage(ChatColor.RED + "この額縁はロックされていません。");
+                    return;
+
+                } else {
+                    // 権限がなければ、操作を禁止する
+                    if ( !damager.hasPermission(PERMISSION + ".break") &&
+                            !damager.hasPermission(PERMISSION + ".admin") ) {
+                        damager.sendMessage(
+                                ChatColor.RED + "パーミッションが無いため、ロック解除できません。");
+                        return;
+                    }
+
+                    // 新しいロックデータを登録する
+                    lockManager.removeLockData(hanging);
+                    damager.sendMessage(ChatColor.GREEN + "ロック解除しました。");
+                    return;
+
+                }
+            }
+        }
+
+        // ==== 事前コマンドが実行されている場合の処理 ここまで ====
+
+        // ==== 以下、額縁に対する攻撃の保護処理 ====
 
         // MEMO: このイベントハンドラは、
         //   額縁の中のアイテムを左クリックされた時、または、
@@ -307,11 +405,11 @@ public class GakubuchiPlayerListener implements Listener {
 
         // 所有者でなくて、管理者でもなければ、操作を禁止する
         if ( damager == null || !ld.getOwnerUuid().equals(damager.getUniqueId()) ||
-                !damager.hasPermission("gakubuchilock.admin") ) {
+                !damager.hasPermission(PERMISSION + ".admin") ) {
             event.setCancelled(true);
             if ( damager != null ) {
                 String msg = String.format(
-                        ChatColor.RED + "This %s is locked with a magical spell.",
+                        ChatColor.RED + "この額縁はロックされています。",
                         hanging.getType().name());
                 damager.sendMessage(msg);
             }
@@ -346,7 +444,7 @@ public class GakubuchiPlayerListener implements Listener {
             event.setCancelled(true);
             if ( event.getPlayer() != null ) {
                 String msg = String.format(
-                        ChatColor.RED + "This %s is locked with a magical spell.",
+                        ChatColor.RED + "この額縁はロックされているため、ブロックを設置できません。",
                         hanging.getType().name());
                 event.getPlayer().sendMessage(msg);
             }
