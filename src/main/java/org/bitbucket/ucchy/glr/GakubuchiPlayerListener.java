@@ -77,7 +77,7 @@ public class GakubuchiPlayerListener implements Listener {
         }
 
         // 設置数制限を超える場合は、設置を許可しない。
-        if ( lockManager.getPlayerLockNum(event.getPlayer().getUniqueId()) >
+        if ( lockManager.getPlayerLockNum(event.getPlayer().getUniqueId()) >=
                 config.getItemFrameLimit() ) {
             event.getPlayer().sendMessage(
                     ChatColor.RED + "あなたは設置制限数を超えたため、額縁を設置できません。");
@@ -186,6 +186,17 @@ public class GakubuchiPlayerListener implements Listener {
             return;
         }
 
+        // 事前コマンドが実行されている場合の処理
+        if ( event.getRemover() instanceof Player ) {
+            Player damager = (Player)event.getRemover();
+            if ( processPrecommand(damager, hanging) ) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+
+        // ==== 以下、額縁に対する攻撃の保護処理 ====
+
         // 対象物のロックデータを取得する
         LockData ld = lockManager.getLockDataByHanging(hanging);
 
@@ -281,101 +292,15 @@ public class GakubuchiPlayerListener implements Listener {
             return;
         }
 
-        // ==== 事前コマンドが実行されている場合の処理 ====
-
+        // 事前コマンドが実行されている場合の処理
         if ( event.getDamager() instanceof Player ) {
             Player damager = (Player)event.getDamager();
-
-            if ( damager.hasMetadata(GakubuchiLockCommand.META_INFO_COMMAND) ) {
-                damager.removeMetadata(GakubuchiLockCommand.META_INFO_COMMAND, parent);
+            Hanging hanging = (Hanging)event.getEntity();
+            if ( processPrecommand(damager, hanging) ) {
                 event.setCancelled(true);
-
-                // ロックデータ取得
-                Hanging hanging = (Hanging)event.getEntity();
-                LockData ld = lockManager.getLockDataByHanging(hanging);
-
-                if ( ld == null ) {
-                    damager.sendMessage(ChatColor.RED + "この額縁はロックされていません。");
-                    return;
-                } else {
-                    String owner;
-                    if ( ld.getOwner() == null ) {
-                        owner = "不明";
-                    } else {
-                        owner = ld.getOwner().getName();
-                    }
-                    damager.sendMessage(String.format(
-                            "オーナー: " + ChatColor.GREEN + "%s(%s)", owner, ld.getOwnerUuid().toString()));
-                    return;
-                }
-
-            } else if ( damager.hasMetadata(GakubuchiLockCommand.META_PRIVATE_COMMAND) ) {
-                damager.removeMetadata(GakubuchiLockCommand.META_PRIVATE_COMMAND, parent);
-                event.setCancelled(true);
-
-                // ロックデータ取得
-                Hanging hanging = (Hanging)event.getEntity();
-                LockData ld = lockManager.getLockDataByHanging(hanging);
-
-                if ( ld == null ) {
-
-                    // 権限がなければ、操作を禁止する
-                    if ( !damager.hasPermission(PERMISSION + ".place") &&
-                            !damager.hasPermission(PERMISSION + ".admin") ) {
-                        damager.sendMessage(
-                                ChatColor.RED + "パーミッションが無いため、ロックできません。");
-                        return;
-                    }
-
-                    // 設置数制限を超える場合は、設置を許可しない。
-                    if ( lockManager.getPlayerLockNum(damager.getUniqueId()) >
-                            config.getItemFrameLimit() ) {
-                        damager.sendMessage(
-                                ChatColor.RED + "あなたは設置制限数を超えたため、ロックを追加できません。");
-                        return;
-                    }
-
-                    // 新しいロックデータを登録する
-                    lockManager.addLockData(damager.getUniqueId(), hanging);
-                    damager.sendMessage(ChatColor.GREEN + "プライベート額縁を作成しました。");
-                    return;
-
-                } else {
-                    damager.sendMessage(ChatColor.RED + "この額縁は既にロックされています。");
-                    return;
-                }
-
-            } else if ( damager.hasMetadata(GakubuchiLockCommand.META_REMOVE_COMMAND) ) {
-                damager.removeMetadata(GakubuchiLockCommand.META_REMOVE_COMMAND, parent);
-                event.setCancelled(true);
-
-                // ロックデータ取得
-                Hanging hanging = (Hanging)event.getEntity();
-                LockData ld = lockManager.getLockDataByHanging(hanging);
-
-                if ( ld == null ) {
-                    damager.sendMessage(ChatColor.RED + "この額縁はロックされていません。");
-                    return;
-
-                } else {
-                    // 権限がなければ、操作を禁止する
-                    if ( !damager.hasPermission(PERMISSION + ".break") &&
-                            !damager.hasPermission(PERMISSION + ".admin") ) {
-                        damager.sendMessage(
-                                ChatColor.RED + "パーミッションが無いため、ロック解除できません。");
-                        return;
-                    }
-
-                    // 新しいロックデータを登録する
-                    lockManager.removeLockData(hanging);
-                    damager.sendMessage(ChatColor.GREEN + "ロック解除しました。");
-                    return;
-
-                }
+                return;
             }
         }
-
-        // ==== 事前コマンドが実行されている場合の処理 ここまで ====
 
         // ==== 以下、額縁に対する攻撃の保護処理 ====
 
@@ -450,5 +375,98 @@ public class GakubuchiPlayerListener implements Listener {
             }
             return;
         }
+    }
+
+    /**
+     * 事前実行されたコマンドを処理する
+     * @param player 実行したプレイヤー
+     * @param hanging 実行対象の額縁
+     * @return コマンド実行したかどうか
+     */
+    private boolean processPrecommand(Player player, Hanging hanging) {
+
+        if ( player.hasMetadata(GakubuchiLockCommand.META_INFO_COMMAND) ) {
+            player.removeMetadata(GakubuchiLockCommand.META_INFO_COMMAND, parent);
+
+            // ロックデータ取得
+            LockData ld = lockManager.getLockDataByHanging(hanging);
+
+            if ( ld == null ) {
+                player.sendMessage(ChatColor.RED + "この額縁はロックされていません。");
+                return true;
+            } else {
+                String owner;
+                if ( ld.getOwner() == null ) {
+                    owner = "不明";
+                } else {
+                    owner = ld.getOwner().getName();
+                }
+                player.sendMessage(String.format(
+                        "オーナー: " + ChatColor.GREEN + "%s(%s)", owner, ld.getOwnerUuid().toString()));
+                return true;
+            }
+
+        } else if ( player.hasMetadata(GakubuchiLockCommand.META_PRIVATE_COMMAND) ) {
+            player.removeMetadata(GakubuchiLockCommand.META_PRIVATE_COMMAND, parent);
+
+            // ロックデータ取得
+            LockData ld = lockManager.getLockDataByHanging(hanging);
+
+            if ( ld == null ) {
+
+                // 権限がなければ、操作を禁止する
+                if ( !player.hasPermission(PERMISSION + ".place") &&
+                        !player.hasPermission(PERMISSION + ".admin") ) {
+                    player.sendMessage(
+                            ChatColor.RED + "パーミッションが無いため、ロックできません。");
+                    return true;
+                }
+
+                // 設置数制限を超える場合は、設置を許可しない。
+                if ( lockManager.getPlayerLockNum(player.getUniqueId()) >=
+                        config.getItemFrameLimit() ) {
+                    player.sendMessage(
+                            ChatColor.RED + "あなたは設置制限数を超えたため、ロックを追加できません。");
+                    return true;
+                }
+
+                // 新しいロックデータを登録する
+                lockManager.addLockData(player.getUniqueId(), hanging);
+                player.sendMessage(ChatColor.GREEN + "プライベート額縁を作成しました。");
+                return true;
+
+            } else {
+                player.sendMessage(ChatColor.RED + "この額縁は既にロックされています。");
+                return true;
+            }
+
+        } else if ( player.hasMetadata(GakubuchiLockCommand.META_REMOVE_COMMAND) ) {
+            player.removeMetadata(GakubuchiLockCommand.META_REMOVE_COMMAND, parent);
+
+            // ロックデータ取得
+            LockData ld = lockManager.getLockDataByHanging(hanging);
+
+            if ( ld == null ) {
+                player.sendMessage(ChatColor.RED + "この額縁はロックされていません。");
+                return true;
+
+            } else {
+                // 権限がなければ、操作を禁止する
+                if ( !player.hasPermission(PERMISSION + ".break") &&
+                        !player.hasPermission(PERMISSION + ".admin") ) {
+                    player.sendMessage(
+                            ChatColor.RED + "パーミッションが無いため、ロック解除できません。");
+                    return true;
+                }
+
+                // 新しいロックデータを登録する
+                lockManager.removeLockData(hanging);
+                player.sendMessage(ChatColor.GREEN + "ロック解除しました。");
+                return true;
+
+            }
+        }
+
+        return false;
     }
 }

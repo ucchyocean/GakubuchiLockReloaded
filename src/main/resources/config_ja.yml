@@ -4,5 +4,5 @@
 # @copyright  Copyright ucchy 2014
 
 # 1人あたりのItemFrameの設置数上限です。-1で無限大に設定することができます。
-itemFrameLimit: 100
+itemFrameLimit: 50
 
