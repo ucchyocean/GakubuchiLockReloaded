@@ -42,7 +42,7 @@ commands:
     description: 額縁のロックを削除します。
     usage: |
            /<command> - 額縁のロックを削除します。
-    permission: gakubuchilock.command.gremove
+    permission: gakubuchilock.command.remove
     permission-message: 'パーミッション "<permission>" が無いため、実行できません。'
 
 permissions:
