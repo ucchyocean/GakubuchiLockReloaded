@@ -226,26 +226,20 @@ public class GakubuchiPlayerListener implements Listener {
         }
 
         // 所有者でなくて、管理者でもなければ、操作を禁止する
-        if ( remover == null || !ld.getOwnerUuid().equals(remover.getUniqueId()) ||
+        if ( (remover == null || !ld.getOwnerUuid().equals(remover.getUniqueId())) &&
                 !remover.hasPermission(PERMISSION + ".admin") ) {
             event.setCancelled(true);
             if ( remover != null ) {
-                String msg = String.format(
-                        ChatColor.RED + "この額縁はロックされています。",
-                        hanging.getType().name());
-                remover.sendMessage(msg);
+                remover.sendMessage(ChatColor.RED + "この額縁はロックされています。");
             }
             return;
         }
 
-        // メッセージを出す
-        String msg = String.format(
-                ChatColor.RED + "額縁のロック情報が削除されました。",
-                hanging.getType().name());
-        remover.sendMessage(msg);
-
         // ロック情報を削除する
         lockManager.removeLockData(hanging);
+
+        // メッセージを出す
+        remover.sendMessage(ChatColor.RED + "額縁のロック情報が削除されました。");
     }
 
     /**
@@ -268,14 +262,10 @@ public class GakubuchiPlayerListener implements Listener {
         Hanging hanging = (Hanging)event.getRightClicked();
         LockData ld = lockManager.getLockDataByHanging(hanging);
 
-        // 所有者でなくて、管理者でもなければ、操作を禁止する
-        if ( ld != null && !ld.getOwnerUuid().equals(event.getPlayer().getUniqueId()) ||
+        if ( ld != null && !ld.getOwnerUuid().equals(event.getPlayer().getUniqueId()) &&
                 !event.getPlayer().hasPermission(PERMISSION + ".admin") ) {
             event.setCancelled(true);
-            String msg = String.format(
-                    ChatColor.RED + "この額縁はロックされています。",
-                    hanging.getType().name());
-            event.getPlayer().sendMessage(msg);
+            event.getPlayer().sendMessage(ChatColor.RED + "この額縁はロックされています。");
             return;
         }
     }
@@ -329,14 +319,11 @@ public class GakubuchiPlayerListener implements Listener {
         }
 
         // 所有者でなくて、管理者でもなければ、操作を禁止する
-        if ( damager == null || !ld.getOwnerUuid().equals(damager.getUniqueId()) ||
-                !damager.hasPermission(PERMISSION + ".admin") ) {
+        if ( damager == null || (!ld.getOwnerUuid().equals(damager.getUniqueId()) &&
+                !damager.hasPermission(PERMISSION + ".admin") ) ) {
             event.setCancelled(true);
             if ( damager != null ) {
-                String msg = String.format(
-                        ChatColor.RED + "この額縁はロックされています。",
-                        hanging.getType().name());
-                damager.sendMessage(msg);
+                damager.sendMessage(ChatColor.RED + "この額縁はロックされています。");
             }
             return;
         }
@@ -368,10 +355,8 @@ public class GakubuchiPlayerListener implements Listener {
             event.setBuild(false);
             event.setCancelled(true);
             if ( event.getPlayer() != null ) {
-                String msg = String.format(
-                        ChatColor.RED + "この額縁はロックされているため、ブロックを設置できません。",
-                        hanging.getType().name());
-                event.getPlayer().sendMessage(msg);
+                event.getPlayer().sendMessage(
+                        ChatColor.RED + "この額縁はロックされているため、ブロックを設置できません。");
             }
             return;
         }
