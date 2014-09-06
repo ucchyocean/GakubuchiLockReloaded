@@ -1,4 +1,4 @@
 GakubuchiLockReloaded
 =====================
 
-Hanging lock plugin
+Gakubuchi Lock Reloaded
