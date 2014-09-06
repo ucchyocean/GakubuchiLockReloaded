@@ -77,8 +77,8 @@ public class GakubuchiPlayerListener implements Listener {
         }
 
         // 設置数制限を超える場合は、設置を許可しない。
-        if ( lockManager.getPlayerLockNum(event.getPlayer().getUniqueId()) >=
-                config.getItemFrameLimit() ) {
+        if ( config.getItemFrameLimit() >= 0 &&
+                lockManager.getPlayerLockNum(event.getPlayer().getUniqueId()) >= config.getItemFrameLimit() ) {
             event.getPlayer().sendMessage(
                     ChatColor.RED + "あなたは設置制限数を超えたため、額縁を設置できません。");
             event.setCancelled(true);

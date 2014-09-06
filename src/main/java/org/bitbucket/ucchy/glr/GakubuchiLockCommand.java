@@ -153,8 +153,13 @@ public class GakubuchiLockCommand implements TabExecutor {
         // 現在の設置数と、制限数を取得し、表示する。
         int now = lockManager.getPlayerLockNum(player.getUniqueId());
         int limit = config.getItemFrameLimit();
-        player.sendMessage(String.format(
-                "あなたの現在の設置数/設置制限数: " + ChatColor.GREEN + "%d/%d", now, limit));
+        if ( limit >= 0 ) {
+            player.sendMessage(String.format(
+                    "あなたの現在の設置数/設置制限数: " + ChatColor.GREEN + "%d/%d", now, limit));
+        } else {
+            player.sendMessage(String.format(
+                    "あなたの現在の設置数/設置制限数: " + ChatColor.GREEN + "%d/∞", now));
+        }
         return true;
     }
 
