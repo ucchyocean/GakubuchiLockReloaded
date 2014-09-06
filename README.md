@@ -2,6 +2,7 @@ GakubuchiLockReloaded
 =====================
 
 Gakubuchi Lock Reloaded
+![スクリーンショット](https://raw.githubusercontent.com/ucchyocean/GakubuchiLockReloaded/master/release/screen_shot.png)
 
 額縁を個人単位で保護して、中のアイテムを守るためのプラグインです。
 
@@ -56,4 +57,5 @@ LGPLv3を適用します。<br/>
 
 ダウンロード
 ------------
-https://github.com/ucchyocean/VoteLogger/blob/master/release/VoteLogger.zip?raw=true
+https://github.com/ucchyocean/GakubuchiLockReloaded/blob/master/release/GakubuchiLockReloaded-dist.zip?raw=true
+
