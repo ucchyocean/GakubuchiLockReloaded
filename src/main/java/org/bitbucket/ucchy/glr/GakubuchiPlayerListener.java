@@ -437,10 +437,18 @@ public class GakubuchiPlayerListener implements Listener {
 
             } else {
                 // 権限がなければ、操作を禁止する
-                if ( !player.hasPermission(PERMISSION + ".break") &&
-                        !player.hasPermission(PERMISSION + ".admin") ) {
+                if ( !player.hasPermission(PERMISSION + ".break") ) {
                     player.sendMessage(
                             ChatColor.RED + "パーミッションが無いため、ロック解除できません。");
+                    return true;
+                }
+
+                // Adminではなくて、かつ、クリックした人の額縁でないなら、操作を禁止する
+                if ( !player.hasPermission(PERMISSION + ".admin") &&
+                        ld.getOwner() != null &&
+                        !ld.getOwner().getName().equals(player.getName()) ) {
+                    player.sendMessage(
+                            ChatColor.RED + "この額縁は他の人に所有されているため、ロック解除できません。");
                     return true;
                 }
 
