@@ -3,7 +3,6 @@ package org.bitbucket.ucchy.glr;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -110,12 +109,12 @@ public class GakubuchiLockCommand implements TabExecutor {
     private boolean doInfo(CommandSender sender, Command command, String label, String[] args) {
 
         if  ( !sender.hasPermission(PERMISSION + ".info") ) {
-            sender.sendMessage(ChatColor.RED + "パーミッションが無いため、実行できません。");
+            sender.sendMessage(Messages.get("PermissionDeniedCommand"));
             return true;
         }
 
         if  ( !(sender instanceof Player) ) {
-            sender.sendMessage(ChatColor.RED + "このコマンドはゲーム外からは実行できません。");
+            sender.sendMessage(Messages.get("NotInGame"));
             return true;
         }
 
@@ -124,7 +123,7 @@ public class GakubuchiLockCommand implements TabExecutor {
         // プレイヤーにメタデータを仕込む
         removeAllMetadata(player);
         player.setMetadata(META_INFO_COMMAND, new FixedMetadataValue(parent, false));
-        sender.sendMessage(ChatColor.AQUA + "ロック情報を見たい額縁をパンチしてください。");
+        sender.sendMessage(Messages.get("PunchInfo"));
         return true;
     }
 
@@ -139,12 +138,12 @@ public class GakubuchiLockCommand implements TabExecutor {
     private boolean doLimits(CommandSender sender, Command command, String label, String[] args) {
 
         if  ( !sender.hasPermission(PERMISSION + ".limits") ) {
-            sender.sendMessage(ChatColor.RED + "パーミッションが無いため、実行できません。");
+            sender.sendMessage(Messages.get("PermissionDeniedCommand"));
             return true;
         }
 
         if  ( !(sender instanceof Player) ) {
-            sender.sendMessage(ChatColor.RED + "このコマンドはゲーム外からは実行できません。");
+            sender.sendMessage(Messages.get("NotInGame"));
             return true;
         }
 
@@ -154,11 +153,15 @@ public class GakubuchiLockCommand implements TabExecutor {
         int now = lockManager.getPlayerLockNum(player.getUniqueId());
         int limit = config.getItemFrameLimit();
         if ( limit >= 0 ) {
-            player.sendMessage(String.format(
-                    "あなたの現在の設置数/設置制限数: " + ChatColor.GREEN + "%d/%d", now, limit));
+            player.sendMessage(Messages.getMessageWithKeywords(
+                    "InformationLimits",
+                    new String[]{"%now", "%limit"},
+                    new String[]{Integer.toString(now), Integer.toString(limit)}));
         } else {
-            player.sendMessage(String.format(
-                    "あなたの現在の設置数/設置制限数: " + ChatColor.GREEN + "%d/∞", now));
+            player.sendMessage(Messages.getMessageWithKeywords(
+                    "InformationLimits",
+                    new String[]{"%now", "%limit"},
+                    new String[]{Integer.toString(now), Messages.get("Infinity")}));
         }
         return true;
     }
@@ -174,12 +177,12 @@ public class GakubuchiLockCommand implements TabExecutor {
     private boolean doPrivate(CommandSender sender, Command command, String label, String[] args) {
 
         if  ( !sender.hasPermission(PERMISSION + ".private") ) {
-            sender.sendMessage(ChatColor.RED + "パーミッションが無いため、実行できません。");
+            sender.sendMessage(Messages.get("PermissionDeniedCommand"));
             return true;
         }
 
         if  ( !(sender instanceof Player) ) {
-            sender.sendMessage(ChatColor.RED + "このコマンドはゲーム外からは実行できません。");
+            sender.sendMessage(Messages.get("NotInGame"));
             return true;
         }
 
@@ -188,7 +191,7 @@ public class GakubuchiLockCommand implements TabExecutor {
         // プレイヤーにメタデータを仕込む
         removeAllMetadata(player);
         player.setMetadata(META_PRIVATE_COMMAND, new FixedMetadataValue(parent, false));
-        sender.sendMessage(ChatColor.AQUA + "ロックする額縁をパンチしてください。");
+        sender.sendMessage(Messages.get("PunchLock"));
         return true;
     }
 
@@ -203,12 +206,12 @@ public class GakubuchiLockCommand implements TabExecutor {
     private boolean doRemove(CommandSender sender, Command command, String label, String[] args) {
 
         if  ( !sender.hasPermission(PERMISSION + ".remove") ) {
-            sender.sendMessage(ChatColor.RED + "パーミッションが無いため、実行できません。");
+            sender.sendMessage(Messages.get("PermissionDeniedCommand"));
             return true;
         }
 
         if  ( !(sender instanceof Player) ) {
-            sender.sendMessage(ChatColor.RED + "このコマンドはゲーム外からは実行できません。");
+            sender.sendMessage(Messages.get("NotInGame"));
             return true;
         }
 
@@ -217,7 +220,7 @@ public class GakubuchiLockCommand implements TabExecutor {
         // プレイヤーにメタデータを仕込む
         removeAllMetadata(player);
         player.setMetadata(META_REMOVE_COMMAND, new FixedMetadataValue(parent, false));
-        sender.sendMessage(ChatColor.AQUA + "ロックを削除する額縁をパンチしてください。");
+        sender.sendMessage(Messages.get("PunchUnlock"));
         return true;
     }
 
@@ -232,14 +235,15 @@ public class GakubuchiLockCommand implements TabExecutor {
     private boolean doReload(CommandSender sender, Command command, String label, String[] args) {
 
         if  ( !sender.hasPermission(PERMISSION + ".reload") ) {
-            sender.sendMessage(ChatColor.RED + "パーミッションが無いため、実行できません。");
+            sender.sendMessage(Messages.get("PermissionDeniedCommand"));
             return true;
         }
 
         // データをリロードする
         lockManager.reloadData();
         config.reloadConfig();
-        sender.sendMessage(ChatColor.AQUA + "データを再読み込みしました。");
+        Messages.reload(config.getLang());
+        sender.sendMessage(Messages.get("InformationReload"));
         return true;
     }
 

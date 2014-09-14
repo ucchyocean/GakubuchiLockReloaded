@@ -1,0 +1,32 @@
+# ${project.name} v${project.version}
+# @author     ucchy
+# @license    LGPLv3
+# @copyright  Copyright ucchy 2014
+
+PermissionDeniedPlace: '&cYou don''t have a permission to place new item frame.'
+PermissionDeniedBreak: '&cYou don''t have a permission to remove item frame.'
+PermissionDeniedLock: '&cYou don''t have a permission to lock item frame.'
+PermissionDeniedUnlock: '&cYou don''t have a permission to unlock item frame.'
+PermissionDeniedCommand: '&cYou don''t have a permission.'
+ExceedLockLimit: '&cYou cannot make new lock, because you exceed the lock limit.'
+BlockPlaceDenied: '&cYou cannot place block here, because this item frame is locked.'
+ItemFrameLocked: '&cThis item frame is locked.'
+ItemFrameUnlocked: '&cThis item frame is not locked.'
+ItemFrameAlreadyLocked: '&cThis item frame is locked already.'
+ItemFrameNotOwner: '&cYou cannot unlock, because this item frame is owned by the other player.'
+NotInGame: '&cThis command can be run only in game.'
+
+PunchInfo: '&bPunch the item frame to view lock information.'
+PunchLock: '&bPunch the item frame to lock.'
+PunchUnlock: '&bPunch the item frame to unlock.'
+
+LockRemoved: '&aItem frame lock was removed.'
+Locked: '&aItem frame was locked'
+
+InformationReload: '&aAll data were reloaded.'
+
+InformationOwner: 'Owner: &a%player&r(&a%uuid&r)'
+UnknownUUID: 'Unknown'
+
+InformationLimits: 'Your lock count/limits: &a%now&r/&a%limit&r'
+Infinity: 'infinity'

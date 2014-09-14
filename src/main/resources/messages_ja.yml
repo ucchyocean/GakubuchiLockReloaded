@@ -1,0 +1,32 @@
+# ${project.name} v${project.version}
+# @author     ucchy
+# @license    LGPLv3
+# @copyright  Copyright ucchy 2014
+
+PermissionDeniedPlace: '&cパーミッションが無いため、設置できません。'
+PermissionDeniedBreak: '&cパーミッションが無いため、破壊できません。'
+PermissionDeniedLock: '&cパーミッションが無いため、ロックできません。'
+PermissionDeniedUnlock: '&cパーミッションが無いため、ロック解除できません。'
+PermissionDeniedCommand: '&cパーミッションが無いため、実行できません。'
+ExceedLockLimit: '&cあなたはロック制限数を超えたため、額縁をロックできません。'
+BlockPlaceDenied: '&cこの額縁はロックされているため、ブロックを設置できません。'
+ItemFrameLocked: '&cこの額縁はロックされています。'
+ItemFrameUnlocked: '&cこの額縁はロックされていません。'
+ItemFrameAlreadyLocked: '&cこの額縁は既にロックされています。'
+ItemFrameNotOwner: '&cこの額縁は他の人に所有されているため、ロック解除できません。'
+NotInGame: '&cこのコマンドはゲーム外からは実行できません。'
+
+PunchInfo: '&bロック情報を見たい額縁をパンチしてください。'
+PunchLock: '&bロックする額縁をパンチしてください。'
+PunchUnlock: '&bロックを削除する額縁をパンチしてください。'
+
+LockRemoved: '&a額縁のロックを削除しました。'
+Locked: '&a額縁をロックしました。'
+
+InformationReload: '&aデータを再読み込みしました。'
+
+InformationOwner: 'オーナー: &a%player&r(&a%uuid&r)'
+UnknownUUID: '不明'
+
+InformationLimits: 'あなたの現在の設置数/設置制限数: &a%now&r/&a%limit&r'
+Infinity: '∞'

@@ -1,71 +1,71 @@
 name: ${project.name}
 version: ${project.version}
 main: org.bitbucket.ucchy.glr.GakubuchiLockReloaded
-description: 額縁ロックプラグイン
+description: ItemFrame lock plugin
 author: ucchy
 
 commands:
   gakubuchilock:
-    description: GakubuchiLockのユーザーコマンド
+    description: Commands of GakubuchiLock
     aliases: [gl]
     usage: |
-           /<command> info - 額縁のロック情報詳細を参照します。
-           /<command> limits - 現在の額縁ロック数と、上限数を表示します。
-           /<command> private - 額縁をロックします。
-           /<command> remove - 額縁のロックを削除します。
-           /<command> reload - 設定ファイルを再読み込みします。
+           /<command> info - View detail of lock.
+           /<command> limits - View information of lock limit.
+           /<command> private - Lock item frame.
+           /<command> remove - Unlock item frame.
+           /<command> reload - Reload all of data.
     permission: gakubuchilock.command
-    permission-message: 'パーミッション "<permission>" が無いため、実行できません。'
+    permission-message: 'You don''t have a permission "<permission>".'
 
   ginfo:
-    description: 額縁のロック情報詳細を参照するコマンド
+    description: View detail of lock.
     usage: |
-           /<command> - 額縁のロック情報詳細を参照します。
+           /<command> - View detail of lock.
     permission: gakubuchilock.command.info
-    permission-message: 'パーミッション "<permission>" が無いため、実行できません。'
+    permission-message: 'You don''t have a permission "<permission>".'
 
   glimits:
-    description: 現在の額縁ロック数と、上限数を表示します。
+    description: View information of lock limit.
     usage: |
-           /<command> - 現在の額縁ロック数と、上限数を表示します。
+           /<command> - View information of lock limit.
     permission: gakubuchilock.command.limits
-    permission-message: 'パーミッション "<permission>" が無いため、実行できません。'
+    permission-message: 'You don''t have a permission "<permission>".'
 
   gprivate:
-    description: 額縁をロックします。
+    description: Lock item frame.
     usage: |
-           /<command> - 額縁をロックします。
+           /<command> - Lock item frame.
     permission: gakubuchilock.command.private
-    permission-message: 'パーミッション "<permission>" が無いため、実行できません。'
+    permission-message: 'You don''t have a permission "<permission>".'
 
   gremove:
-    description: 額縁のロックを削除します。
+    description: Unlock item frame.
     usage: |
-           /<command> - 額縁のロックを削除します。
+           /<command> - Unlock item frame.
     permission: gakubuchilock.command.remove
-    permission-message: 'パーミッション "<permission>" が無いため、実行できません。'
+    permission-message: 'You don''t have a permission "<permission>".'
 
 permissions:
   gakubuchilock.command:
-    description: コマンドの使用権限
+    description: Permission of command.
     default: true
   gakubuchilock.command.info:
-    description: infoコマンドの使用権限
+    description: Permission of info command.
     default: true
   gakubuchilock.command.limits:
-    description: limitsコマンドの使用権限
+    description: Permission of limits command.
     default: true
   gakubuchilock.command.private:
-    description: privateコマンドの使用権限
+    description: Permission of private command.
     default: true
   gakubuchilock.command.remove:
-    description: removeコマンドの使用権限
+    description: Permission of remove command.
     default: true
   gakubuchilock.command.reload:
-    description: reloadコマンドの使用権限
+    description: Permission of reload command.
     default: op
   'gakubuchilock.command.*':
-    description: 全てのコマンドの使用権限
+    description: Permissions of all commands.
     children:
       gakubuchilock.command: true
       gakubuchilock.command.info: true
@@ -75,23 +75,23 @@ permissions:
       gakubuchilock.command.reload: true
 
   gakubuchilock.entity.place:
-    description: 額縁を新規に設置できる権限
+    description: Permission to place new ItemFrame.
     default: true
   gakubuchilock.entity.break:
-    description: ロックされていない額縁を、剥がすことができる権限
+    description: Permission to remove none-locked ItemFrame.
     default: true
   gakubuchilock.entity.admin:
-    description: ロックされた額縁を、所有者でなくても操作できる権限
+    description: Permission to access none-owner locked ItemFrame.
     default: op
   'gakubuchilock.entity.*':
-    description: 全てのエンティティの操作権限
+    description: Permissions of all entity access.
     children:
       gakubuchilock.entity.place: true
       gakubuchilock.entity.break: true
       gakubuchilock.entity.admin: true
 
   'gakubuchilock.*':
-    description: GakubuchiLockの全てのパーミッション
+    description: All of permissions.
     children:
       'gakubuchilock.command.*': true
       'gakubuchilock.entity.*': true

@@ -38,6 +38,10 @@ public class GakubuchiLockReloaded extends JavaPlugin {
         // コンフィグをロードする
         config = new GakubuchiLockConfig(this);
 
+        // メッセージをロードする
+        Messages.initialize(getFile(), getDataFolder());
+        Messages.reload(config.getLang());
+
         // リスナークラスを登録する
         getServer().getPluginManager().registerEvents(
                 new GakubuchiPlayerListener(this), this);
@@ -66,7 +70,7 @@ public class GakubuchiLockReloaded extends JavaPlugin {
      * ロックデータマネージャを返す
      * @return ロックデータマネージャ
      */
-    public LockDataManager getLockDataManager() {
+    protected LockDataManager getLockDataManager() {
         return lockManager;
     }
 
@@ -74,7 +78,7 @@ public class GakubuchiLockReloaded extends JavaPlugin {
      * コンフィグデータを返す
      * @return
      */
-    public GakubuchiLockConfig getGLConfig() {
+    protected GakubuchiLockConfig getGLConfig() {
         return config;
     }
 
