@@ -74,18 +74,22 @@ public class GakubuchiPlayerListener implements Listener {
             return;
         }
 
-        // 設置数制限を超える場合は、設置を許可しない。
-        if ( config.getItemFrameLimit() >= 0 &&
-                lockManager.getPlayerLockNum(event.getPlayer().getUniqueId()) >=
-                    config.getItemFrameLimit() ) {
-            event.getPlayer().sendMessage(Messages.get("ExceedLockLimit"));
-            event.setCancelled(true);
-            return;
-        }
+        if ( config.isAutoLock() ) {
+            // 自動ロック処理
 
-        // 新しいロックデータを登録する
-        lockManager.addLockData(event.getPlayer().getUniqueId(), hanging);
-        event.getPlayer().sendMessage(Messages.get("Locked"));
+            // 設置数制限を超える場合は、設置を許可しない。
+            if ( config.getItemFrameLimit() >= 0 &&
+                    lockManager.getPlayerLockNum(event.getPlayer().getUniqueId()) >=
+                        config.getItemFrameLimit() ) {
+                event.getPlayer().sendMessage(Messages.get("ExceedLockLimit"));
+                event.setCancelled(true);
+                return;
+            }
+
+            // 新しいロックデータを登録する
+            lockManager.addLockData(event.getPlayer().getUniqueId(), hanging);
+            event.getPlayer().sendMessage(Messages.get("Locked"));
+        }
     }
 
     /**

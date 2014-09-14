@@ -20,6 +20,7 @@ public class GakubuchiLockConfig {
     private String lang;
     private int itemFrameLimit;
     private WallMode wallMode;
+    private boolean autoLock;
 
     /**
      * コンストラクタ
@@ -53,6 +54,7 @@ public class GakubuchiLockConfig {
         itemFrameLimit = conf.getInt("itemFrameLimit", 100);
         wallMode = WallMode.fromString(
                 conf.getString("wallMode"), WallMode.REGEN_STONE);
+        autoLock = conf.getBoolean("autoLock", true);
     }
 
     /**
@@ -74,5 +76,12 @@ public class GakubuchiLockConfig {
      */
     public WallMode getWallMode() {
         return wallMode;
+    }
+
+    /**
+     * @return autoLock
+     */
+    public boolean isAutoLock() {
+        return autoLock;
     }
 }
