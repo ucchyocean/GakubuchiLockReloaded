@@ -115,7 +115,7 @@ public class GakubuchiPlayerListener implements Listener {
         // 対象物のロックデータを取得する
         LockData ld = lockManager.getLockDataByHanging(hanging);
 
-        // ロックデータが無い場合
+        // ロックデータが無い場合はイベントを無視する
         if ( ld == null ) {
             return;
         }
@@ -171,7 +171,9 @@ public class GakubuchiPlayerListener implements Listener {
                 // イベントをキャンセルする。
                 // ロック情報はそのままにする。
                 Block wall = obst.getRelative(hanging.getAttachedFace());
-                wall.setType(Material.STONE);
+                if ( wall.getType() == Material.AIR || wall.isLiquid() ) {
+                    wall.setType(Material.STONE);
+                }
                 event.setCancelled(true);
 
             } else if ( config.getWallMode() == WallMode.EXTINCTION ) {
