@@ -3,6 +3,7 @@ version: ${project.version}
 main: org.bitbucket.ucchy.glr.GakubuchiLockReloaded
 description: ItemFrame lock plugin
 author: ucchy
+softdepend: [Multiverse-Core,MultiWorld]
 
 commands:
   gakubuchilock:
