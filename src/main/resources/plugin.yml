@@ -84,12 +84,16 @@ permissions:
   gakubuchilock.entity.admin:
     description: Permission to access none-owner locked ItemFrame.
     default: op
+  gakubuchilock.entity.infinite-place:
+    description: Permission to place ItemFrame infinite, regardless place limits.
+    default: op
   'gakubuchilock.entity.*':
     description: Permissions of all entity access.
     children:
       gakubuchilock.entity.place: true
       gakubuchilock.entity.break: true
       gakubuchilock.entity.admin: true
+      gakubuchilock.entity.infinite-place: true
 
   'gakubuchilock.*':
     description: All of permissions.

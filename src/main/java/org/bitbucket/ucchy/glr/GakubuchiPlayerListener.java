@@ -30,6 +30,8 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 public class GakubuchiPlayerListener implements Listener {
 
     private static final String PERMISSION = "gakubuchilock.entity";
+    private static final String PERMISSION_INFINITE_PLACE =
+            "gakubuchilock.entity.infinite-place";
 
     private GakubuchiLockReloaded parent;
     private LockDataManager lockManager;
@@ -79,6 +81,7 @@ public class GakubuchiPlayerListener implements Listener {
 
             // 設置数制限を超える場合は、設置を許可しない。
             if ( config.getItemFrameLimit() >= 0 &&
+                    !event.getPlayer().hasPermission(PERMISSION_INFINITE_PLACE) &&
                     lockManager.getPlayerLockNum(event.getPlayer().getUniqueId()) >=
                         config.getItemFrameLimit() ) {
                 event.getPlayer().sendMessage(Messages.get("ExceedLockLimit"));
@@ -425,6 +428,7 @@ public class GakubuchiPlayerListener implements Listener {
 
                 // 設置数制限を超える場合は、設置を許可しない。
                 if ( config.getItemFrameLimit() >= 0 &&
+                        !player.hasPermission(PERMISSION_INFINITE_PLACE) &&
                         lockManager.getPlayerLockNum(player.getUniqueId()) >=
                             config.getItemFrameLimit() ) {
                     player.sendMessage(Messages.get("ExceedLockLimit"));

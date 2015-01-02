@@ -20,6 +20,8 @@ public class GakubuchiLockCommand implements TabExecutor {
     protected static final String META_REMOVE_COMMAND = "gakubuchiremove";
 
     private static final String PERMISSION = "gakubuchilock.command";
+    private static final String PERMISSION_INFINITE_PLACE =
+            "gakubuchilock.entity.infinite-place";
 
     private GakubuchiLockReloaded parent;
     private LockDataManager lockManager;
@@ -152,7 +154,7 @@ public class GakubuchiLockCommand implements TabExecutor {
         // 現在の設置数と、制限数を取得し、表示する。
         int now = lockManager.getPlayerLockNum(player.getUniqueId());
         int limit = config.getItemFrameLimit();
-        if ( limit >= 0 ) {
+        if ( limit >= 0 && !player.hasPermission(PERMISSION_INFINITE_PLACE) ) {
             player.sendMessage(Messages.getMessageWithKeywords(
                     "InformationLimits",
                     new String[]{"%now", "%limit"},
