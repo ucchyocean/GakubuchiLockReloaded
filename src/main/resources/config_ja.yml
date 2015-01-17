@@ -7,6 +7,8 @@
 lang: ja
 
 # 1人あたりのItemFrameの設置数上限です。-1で無限大に設定することができます。
+# パーミッション "gakubuchilock.entity.infinite-place" を持っている人や、OPは、
+# この制限を受けずに無制限に設置可能です。
 itemFrameLimit: 50
 
 # 壁のみが壊されていて、ブロックアップデートが発生したときの、対応モード
