@@ -252,8 +252,9 @@ public class GakubuchiPlayerListener implements Listener {
         }
 
         // 所有者でなくて、管理者でもなければ、操作を禁止する
-        if ( (remover == null || !ld.getOwnerUuid().equals(remover.getUniqueId())) ||
-                !remover.hasPermission(PERMISSION + ".admin") ) {
+        if ( remover == null ||
+                (!ld.getOwnerUuid().equals(remover.getUniqueId()) &&
+                 !remover.hasPermission(PERMISSION + ".admin") ) ) {
             event.setCancelled(true);
             if ( remover != null ) {
                 remover.sendMessage(Messages.get("ItemFrameLocked"));
