@@ -16,6 +16,8 @@ ItemFrameAlreadyLocked: '&cThis item frame is locked already.'
 ItemFrameNotOwner: '&cYou cannot unlock, because this item frame is owned by the other player.'
 NotInGame: '&cThis command can be run only in game.'
 
+PersistMode: '&bYou entered a persist mode. To exit mode, please run "/gpersist" command.'
+PersistOff: '&bYou exited a persist mode.'
 PunchInfo: '&bPunch the item frame to view lock information.'
 PunchLock: '&bPunch the item frame to lock.'
 PunchUnlock: '&bPunch the item frame to unlock.'

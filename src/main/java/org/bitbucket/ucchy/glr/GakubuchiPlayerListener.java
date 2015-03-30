@@ -397,7 +397,10 @@ public class GakubuchiPlayerListener implements Listener {
     private boolean processPrecommand(Player player, Hanging hanging) {
 
         if ( player.hasMetadata(GakubuchiLockCommand.META_INFO_COMMAND) ) {
-            player.removeMetadata(GakubuchiLockCommand.META_INFO_COMMAND, parent);
+
+            if ( !player.hasMetadata(GakubuchiLockCommand.META_PERSIST_MODE) ) {
+                player.removeMetadata(GakubuchiLockCommand.META_INFO_COMMAND, parent);
+            }
 
             // ロックデータ取得
             LockData ld = lockManager.getLockDataByHanging(hanging);
@@ -420,7 +423,10 @@ public class GakubuchiPlayerListener implements Listener {
             }
 
         } else if ( player.hasMetadata(GakubuchiLockCommand.META_PRIVATE_COMMAND) ) {
-            player.removeMetadata(GakubuchiLockCommand.META_PRIVATE_COMMAND, parent);
+
+            if ( !player.hasMetadata(GakubuchiLockCommand.META_PERSIST_MODE) ) {
+                player.removeMetadata(GakubuchiLockCommand.META_PRIVATE_COMMAND, parent);
+            }
 
             // ロックデータ取得
             LockData ld = lockManager.getLockDataByHanging(hanging);
@@ -447,7 +453,10 @@ public class GakubuchiPlayerListener implements Listener {
             }
 
         } else if ( player.hasMetadata(GakubuchiLockCommand.META_REMOVE_COMMAND) ) {
-            player.removeMetadata(GakubuchiLockCommand.META_REMOVE_COMMAND, parent);
+
+            if ( !player.hasMetadata(GakubuchiLockCommand.META_PERSIST_MODE) ) {
+                player.removeMetadata(GakubuchiLockCommand.META_REMOVE_COMMAND, parent);
+            }
 
             // ロックデータ取得
             LockData ld = lockManager.getLockDataByHanging(hanging);

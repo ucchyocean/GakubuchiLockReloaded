@@ -18,6 +18,7 @@ public class GakubuchiLockCommand implements TabExecutor {
     protected static final String META_INFO_COMMAND = "gakubuchiinfo";
     protected static final String META_PRIVATE_COMMAND = "gakubuchiprivate";
     protected static final String META_REMOVE_COMMAND = "gakubuchiremove";
+    protected static final String META_PERSIST_MODE = "gakubuchipersist";
 
     private static final String PERMISSION = "gakubuchilock.command";
     private static final String PERMISSION_INFINITE_PLACE =
@@ -53,6 +54,8 @@ public class GakubuchiLockCommand implements TabExecutor {
             return doPrivate(sender, command, label, args);
         } else if ( command.getName().equals("gremove") ) {
             return doRemove(sender, command, label, args);
+        } else if ( command.getName().equals("gpersist") ) {
+            return doPersist(sender, command, label, args);
         }
 
         // 以下、/gakubuchilock コマンドに対する処理
@@ -71,6 +74,8 @@ public class GakubuchiLockCommand implements TabExecutor {
             return doPrivate(sender, command, label, args);
         } else if ( args[0].equalsIgnoreCase("remove") ) {
             return doRemove(sender, command, label, args);
+        } else if ( args[0].equalsIgnoreCase("persist") ) {
+            return doPersist(sender, command, label, args);
         } else if ( args[0].equalsIgnoreCase("reload") ) {
             return doReload(sender, command, label, args);
         }
@@ -227,6 +232,89 @@ public class GakubuchiLockCommand implements TabExecutor {
     }
 
     /**
+     * persistコマンドを実行する
+     * @param sender 実行者
+     * @param command コマンド
+     * @param label ラベル
+     * @param args 引数
+     * @return コマンド実行が成功したかどうか（falseを返すとusageを表示する）
+     */
+    private boolean doPersist(CommandSender sender, Command command, String label, String[] args) {
+
+        if  ( !sender.hasPermission(PERMISSION + ".remove") ) {
+            sender.sendMessage(Messages.get("PermissionDeniedCommand"));
+            return true;
+        }
+
+        if  ( !(sender instanceof Player) ) {
+            sender.sendMessage(Messages.get("NotInGame"));
+            return true;
+        }
+
+        Player player = (Player)sender;
+
+        // コマンドパラメータの解析
+        ArrayList<String> queue = new ArrayList<String>();
+        for ( String a : args ) {
+            queue.add(a);
+        }
+
+        boolean isInfo = false;
+        boolean isLock = false;
+        boolean isOn = true;
+        if ( queue.size() > 0 && queue.get(0).equalsIgnoreCase("persist") ) {
+            queue.remove(0);
+        }
+        if ( queue.size() > 0 && queue.get(0).equalsIgnoreCase("info") ) {
+            isInfo = true;
+        } else if ( queue.size() > 0 && queue.get(0).equalsIgnoreCase("lock") ) {
+            isLock = true;
+        } else if ( queue.size() > 0 && queue.get(0).equalsIgnoreCase("unlock") ) {
+            isLock = false;
+        } else if ( queue.size() > 0 && queue.get(0).equalsIgnoreCase("off") ) {
+            isOn = false;
+        } else {
+            // パラメータ無し、または無効な文字列なら、
+            // - モードオフの状態ならロックモードにする。
+            // - モードオンの状態ならオフにする。
+            if ( !player.hasMetadata(META_PERSIST_MODE) ) {
+                isLock = true;
+            } else {
+                isOn = false;
+            }
+        }
+
+        if ( !isOn ) {
+            // オフにする
+            removeAllMetadata(player);
+            sender.sendMessage(Messages.get("PersistOff"));
+        } else {
+            removeAllMetadata(player); // 一旦全解除
+            if ( isInfo ) {
+                // 連続インフォモードにする
+                player.setMetadata(META_INFO_COMMAND, new FixedMetadataValue(parent, false));
+                player.setMetadata(META_PERSIST_MODE, new FixedMetadataValue(parent, false));
+                sender.sendMessage(Messages.get("PersistMode"));
+                sender.sendMessage(Messages.get("PunchInfo"));
+            } else if ( isLock ) {
+                // 連続ロックモードにする
+                player.setMetadata(META_PRIVATE_COMMAND, new FixedMetadataValue(parent, false));
+                player.setMetadata(META_PERSIST_MODE, new FixedMetadataValue(parent, false));
+                sender.sendMessage(Messages.get("PersistMode"));
+                sender.sendMessage(Messages.get("PunchLock"));
+            } else {
+                // 連続解除モードにする
+                player.setMetadata(META_REMOVE_COMMAND, new FixedMetadataValue(parent, false));
+                player.setMetadata(META_PERSIST_MODE, new FixedMetadataValue(parent, false));
+                sender.sendMessage(Messages.get("PersistMode"));
+                sender.sendMessage(Messages.get("PunchUnlock"));
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * reloadコマンドを実行する
      * @param sender 実行者
      * @param command コマンド
@@ -257,5 +345,6 @@ public class GakubuchiLockCommand implements TabExecutor {
         player.removeMetadata(META_INFO_COMMAND, parent);
         player.removeMetadata(META_PRIVATE_COMMAND, parent);
         player.removeMetadata(META_REMOVE_COMMAND, parent);
+        player.removeMetadata(META_PERSIST_MODE, parent);
     }
 }

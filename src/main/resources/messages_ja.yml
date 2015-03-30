@@ -16,6 +16,8 @@ ItemFrameAlreadyLocked: '&cこの額縁は既にロックされています。'
 ItemFrameNotOwner: '&cこの額縁は他の人に所有されているため、ロック解除できません。'
 NotInGame: '&cこのコマンドはゲーム外からは実行できません。'
 
+PersistMode: '&b連続モードになりました。連続モードを解除するには、/gpersist を実行してください。'
+PersistOff: '&b連続モードを解除しました。'
 PunchInfo: '&bロック情報を見たい額縁をパンチしてください。'
 PunchLock: '&bロックする額縁をパンチしてください。'
 PunchUnlock: '&bロックを削除する額縁をパンチしてください。'

@@ -14,6 +14,7 @@ commands:
            /<command> limits - View information of lock limit.
            /<command> private - Lock item frame.
            /<command> remove - Unlock item frame.
+           /<command> persist [lock|unlock|off] - Lock/Unlock item frame repeatedly.
            /<command> reload - Reload all of data.
     permission: gakubuchilock.command
     permission-message: 'You don''t have a permission "<permission>".'
@@ -46,6 +47,13 @@ commands:
     permission: gakubuchilock.command.remove
     permission-message: 'You don''t have a permission "<permission>".'
 
+  gpersist:
+    description: Lock/Unlock item frame repeatedly.
+    usage: |
+           /<command> [lock|unlock|off] - Lock/Unlock item frame repeatedly.
+    permission: gakubuchilock.command.persist
+    permission-message: 'You don''t have a permission "<permission>".'
+
 permissions:
   gakubuchilock.command:
     description: Permission of command.
@@ -62,6 +70,9 @@ permissions:
   gakubuchilock.command.remove:
     description: Permission of remove command.
     default: true
+  gakubuchilock.command.persist:
+    description: Permission of persist command.
+    default: true
   gakubuchilock.command.reload:
     description: Permission of reload command.
     default: op
@@ -73,6 +84,7 @@ permissions:
       gakubuchilock.command.limits: true
       gakubuchilock.command.private: true
       gakubuchilock.command.remove: true
+      gakubuchilock.command.persist: true
       gakubuchilock.command.reload: true
 
   gakubuchilock.entity.place:
