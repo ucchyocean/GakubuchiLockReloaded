@@ -13,6 +13,7 @@
   <files>
     <file>
       <source>target/GakubuchiLockReloaded.jar</source>
+      <destName>plugins/GakubuchiLockReloaded.jar</destName>
     </file>
   </files>
 
