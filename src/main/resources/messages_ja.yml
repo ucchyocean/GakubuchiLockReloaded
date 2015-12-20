@@ -28,7 +28,9 @@ Locked: '&a額縁をロックしました。'
 InformationReload: '&aデータを再読み込みしました。'
 
 InformationOwner: 'オーナー: &a%player&r(&a%uuid&r)'
+InformationTime: 'ロック日時: &a%time'
 UnknownUUID: '不明'
+DateTimeFormat: 'yyyy/MM/dd HH:mm:ss'
 
 InformationLimits: 'あなたの現在の設置数/設置制限数: &a%now&r/&a%limit&r'
 Infinity: '∞'

@@ -5,8 +5,13 @@
  */
 package org.bitbucket.ucchy.glr;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Hanging;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
@@ -66,6 +71,29 @@ public class GakubuchiUtility {
             }
         }
         return null;
+    }
+
+    /**
+     * 指定したブロックに貼りついているItemFrameを取得する
+     * @param block ブロック
+     * @return 貼りついているItemFrame
+     */
+    public static List<ItemFrame> getAttachedFrameOnBlock(Block block) {
+
+        List<ItemFrame> list = new ArrayList<ItemFrame>();
+        if ( block == null || block.isEmpty() || block.isLiquid() ) {
+            return list;
+        }
+
+        for ( BlockFace direction : new BlockFace[]{
+                BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST} ) {
+            ItemFrame frame = getFrameFromLocation(block.getRelative(direction).getLocation());
+            if ( frame != null && frame.getFacing() == direction ) {
+                list.add(frame);
+            }
+        }
+
+        return list;
     }
 
     /**

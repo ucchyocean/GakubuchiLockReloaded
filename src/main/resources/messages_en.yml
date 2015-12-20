@@ -28,7 +28,9 @@ Locked: '&aItem frame was locked'
 InformationReload: '&aAll data were reloaded.'
 
 InformationOwner: 'Owner: &a%player&r(&a%uuid&r)'
+InformationTime: 'LockedTime: &a%time'
 UnknownUUID: 'Unknown'
+DateTimeFormat: 'MM/dd/yyyy HH:mm:ss'
 
 InformationLimits: 'Your lock count/limits: &a%now&r/&a%limit&r'
 Infinity: 'infinity'

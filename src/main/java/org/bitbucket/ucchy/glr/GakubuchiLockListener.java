@@ -5,6 +5,9 @@
  */
 package org.bitbucket.ucchy.glr;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -16,6 +19,8 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
@@ -27,7 +32,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
  * GakubuchiLockのリスナークラス
  * @author ucchy
  */
-public class GakubuchiPlayerListener implements Listener {
+public class GakubuchiLockListener implements Listener {
 
     private static final String PERMISSION = "gakubuchilock.entity";
     private static final String PERMISSION_INFINITE_PLACE =
@@ -37,14 +42,18 @@ public class GakubuchiPlayerListener implements Listener {
     private LockDataManager lockManager;
     private GakubuchiLockConfig config;
 
+    private SimpleDateFormat format;
+
     /**
      * コンストラクタ
      * @param parent
      */
-    public GakubuchiPlayerListener(GakubuchiLockReloaded parent) {
+    public GakubuchiLockListener(GakubuchiLockReloaded parent) {
         this.parent = parent;
         this.lockManager = parent.getLockDataManager();
         this.config = parent.getGLConfig();
+
+        this.format = new SimpleDateFormat(Messages.get("DateTimeFormat"));
     }
 
     /**
@@ -419,6 +428,14 @@ public class GakubuchiPlayerListener implements Listener {
                         "InformationOwner",
                         new String[]{"%player", "%uuid"},
                         new String[]{owner, ld.getOwnerUuid().toString()}));
+
+                if (ld.getDate() > 0) {
+                    Date d = new Date();
+                    d.setTime(ld.getDate());
+                    String time = format.format(d);
+                    player.sendMessage(Messages.getMessageWithKeywords(
+                            "InformationTime", new String[] {"%time"}, new String[]{time}));
+                }
                 return true;
             }
 
@@ -483,5 +500,55 @@ public class GakubuchiPlayerListener implements Listener {
         }
 
         return false;
+    }
+
+    /**
+     * ピストンが伸びたときのイベント
+     * @param event
+     */
+    @EventHandler
+    public void onBlockPistonExtended(BlockPistonExtendEvent event) {
+
+        // ピストンが伸びた先に額縁があるなら、イベントをキャンセルする。
+        Location extLoc = event.getBlock().getRelative(event.getDirection()).getLocation();
+        if (  GakubuchiUtility.getFrameFromLocation(extLoc) != null ) {
+            event.setCancelled(true);
+            return;
+        }
+        for ( Block block : event.getBlocks() ) {
+
+            // これから動くブロックに、ロックされた額縁が貼りついているなら、イベントをキャンセルする。
+            for ( ItemFrame frame : GakubuchiUtility.getAttachedFrameOnBlock(block) ) {
+                if ( lockManager.getLockDataByHanging(frame) != null ) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            // これから動くブロックの移動先に、ロックされた額縁が貼りついているなら、イベントをキャンセルする。
+            Location location = block.getRelative(event.getDirection()).getLocation();
+            ItemFrame frame = GakubuchiUtility.getFrameFromLocation(location);
+            if ( frame != null && lockManager.getLockDataByHanging(frame) != null ) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
+
+    /**
+     * ピストンが縮んだときのイベント
+     * @param event
+     */
+    @EventHandler
+    public void onBlockPistonRetract(BlockPistonRetractEvent event) {
+
+        // 動いたブロックのところに額縁があるなら、イベントをキャンセルする。
+        Block block = event.getBlock().getRelative(event.getDirection());
+        for ( ItemFrame frame : GakubuchiUtility.getAttachedFrameOnBlock(block) ) {
+            if ( lockManager.getLockDataByHanging(frame) != null ) {
+                event.setCancelled(true);
+                return;
+            }
+        }
     }
 }

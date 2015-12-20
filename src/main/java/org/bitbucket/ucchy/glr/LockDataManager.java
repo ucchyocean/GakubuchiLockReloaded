@@ -122,12 +122,13 @@ public class LockDataManager {
             }
 
             Hanging hanging = getHangingFromLocation(location, hangings);
+            long time = config.getLong(key, -1);
 
             if ( hanging == null ) {
                 continue;
             }
 
-            data.add(new LockData(uuid, hanging));
+            data.add(new LockData(uuid, hanging, time));
         }
 
         return data;
@@ -157,7 +158,7 @@ public class LockDataManager {
         ArrayList<LockData> datas = idMap.get(uuid);
         for ( LockData data : datas ) {
             String desc = getDescriptionFromLocation(data.getLocation());
-            config.set(desc, data.getHanging().getType().name());
+            config.set(desc, data.getDate());
         }
 
         try {
@@ -194,7 +195,7 @@ public class LockDataManager {
         }
 
         // ロックデータ追加
-        LockData data = new LockData(uuid, hanging);
+        LockData data = new LockData(uuid, hanging, System.currentTimeMillis());
         idMap.get(uuid).add(data);
         hangingMap.put(hanging.getUniqueId(), data);
 

@@ -22,7 +22,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
  */
 public class Messages {
 
-    private static final String DEFAULT_FILE_NAME = "messages_en.yml";
+    private static final String DEFAULT_FILE_NAME = "messages_ja.yml";
 
     private static YamlConfiguration defaultMessages;
     private static File configFolder;

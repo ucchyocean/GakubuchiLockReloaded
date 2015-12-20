@@ -24,14 +24,19 @@ public class LockData {
     /** ロック対象のHanging */
     private Hanging hanging;
 
+    /** ロック日時 */
+    private long time;
+
     /**
      * コンストラクタ
      * @param uuid ロック所有者のUUID
      * @param hanging ロック対象のHanging
+     * @param time ロック日時
      */
-    public LockData(UUID uuid, Hanging hanging) {
+    public LockData(UUID uuid, Hanging hanging, long time) {
         this.uuid = uuid;
         this.hanging = hanging;
+        this.time = time;
     }
 
     /**
@@ -62,6 +67,14 @@ public class LockData {
      */
     public Location getLocation() {
         return hanging.getLocation();
+    }
+
+    /**
+     * ロック日時を返す
+     * @return ロック日時
+     */
+    public long getDate() {
+        return time;
     }
 
     /**
