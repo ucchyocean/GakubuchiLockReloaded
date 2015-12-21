@@ -21,8 +21,6 @@ public class GakubuchiLockCommand implements TabExecutor {
     protected static final String META_PERSIST_MODE = "gakubuchipersist";
 
     private static final String PERMISSION = "gakubuchilock.command";
-    private static final String PERMISSION_INFINITE_PLACE =
-            "gakubuchilock.entity.infinite-place";
 
     private GakubuchiLockReloaded parent;
     private LockDataManager lockManager;
@@ -158,18 +156,12 @@ public class GakubuchiLockCommand implements TabExecutor {
 
         // 現在の設置数と、制限数を取得し、表示する。
         int now = lockManager.getPlayerLockNum(player.getUniqueId());
-        int limit = config.getItemFrameLimit();
-        if ( limit >= 0 && !player.hasPermission(PERMISSION_INFINITE_PLACE) ) {
-            player.sendMessage(Messages.getMessageWithKeywords(
-                    "InformationLimits",
-                    new String[]{"%now", "%limit"},
-                    new String[]{Integer.toString(now), Integer.toString(limit)}));
-        } else {
-            player.sendMessage(Messages.getMessageWithKeywords(
-                    "InformationLimits",
-                    new String[]{"%now", "%limit"},
-                    new String[]{Integer.toString(now), Messages.get("Infinity")}));
-        }
+        int limit = lockManager.getPlayerStandLimit(player);
+        String limits = limit < 0 ? Messages.get("Infinity") : limit + "";
+        player.sendMessage(Messages.getMessageWithKeywords(
+                "InformationLimits",
+                new String[]{"%now", "%limit"},
+                new String[]{Integer.toString(now), limits}));
         return true;
     }
 
@@ -241,7 +233,7 @@ public class GakubuchiLockCommand implements TabExecutor {
      */
     private boolean doPersist(CommandSender sender, Command command, String label, String[] args) {
 
-        if  ( !sender.hasPermission(PERMISSION + ".remove") ) {
+        if  ( !sender.hasPermission(PERMISSION + ".persist") ) {
             sender.sendMessage(Messages.get("PermissionDeniedCommand"));
             return true;
         }

@@ -18,6 +18,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Hanging;
+import org.bukkit.entity.Player;
 
 /**
  * ロックデータマネージャ
@@ -239,6 +240,31 @@ public class LockDataManager {
         return 0;
     }
 
+    /**
+     * 指定されたプレイヤーの設置上限数を返す
+     * @param player プレイヤー
+     * @return 設置上限数(ただし、-1は無限大を示す)
+     */
+    public int getPlayerStandLimit(Player player) {
+
+        if ( player.hasPermission(GakubuchiLockReloaded.PERMISSION_INFINITE_PLACE) ) {
+            return -1;
+        }
+
+        GakubuchiLockConfig config = GakubuchiLockReloaded.getInstance().getGLConfig();
+        int limit = config.getItemFrameLimit();
+
+        if ( limit <= -1 ) {
+            return -1;
+        }
+
+        if ( GakubuchiLockReloaded.getInstance().getPex() != null ) {
+            return GakubuchiLockReloaded.getInstance().getPex().getPlayerIntegerOptionValue(
+                    player, "itemFrameLimit", limit);
+        }
+
+        return limit;
+    }
 
     /**
      * 指定された場所に存在するHangingを取得する

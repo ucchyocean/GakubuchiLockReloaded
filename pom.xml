@@ -70,6 +70,21 @@
       <name>Craft Bukkit Maven Repository</name>
       <url>http://repo.bukkit.org/content/groups/public</url>
     </repository>
+    <repository>
+      <id>spigot-repo</id>
+      <name>Spigot Maven Repository</name>
+      <url>https://hub.spigotmc.org/nexus/content/groups/public</url>
+    </repository>
+    <repository>
+      <id>pex-repo</id>
+      <name>PermissionsEx Repository</name>
+      <url>http://pex-repo.zachsthings.com</url>
+    </repository>
+    <repository>
+      <id>pex-repo-alt</id>
+      <name>PermissionsEx Alternative Repository</name>
+      <url>http://pex-repo.aoeu.xyz</url>
+    </repository>
   </repositories>
 
   <dependencies>
@@ -77,6 +92,13 @@
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
       <version>1.7.9-R0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>ru.tehkode</groupId>
+      <artifactId>PermissionsEx</artifactId>
+      <version>1.23.3</version>
+      <scope>system</scope>
+      <systemPath>${basedir}/lib/PermissionsEx-1.23.3.jar</systemPath>
     </dependency>
   </dependencies>
 </project>

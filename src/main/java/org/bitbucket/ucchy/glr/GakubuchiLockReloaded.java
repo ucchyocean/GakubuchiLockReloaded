@@ -8,6 +8,7 @@ package org.bitbucket.ucchy.glr;
 import java.io.File;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,9 +21,14 @@ public class GakubuchiLockReloaded extends JavaPlugin {
 
     private static final String DATA_FOLDER = "data";
 
+    protected static final String PERMISSION_INFINITE_PLACE =
+            "gakubuchilock.entity.infinite-place";
+
     private LockDataManager lockManager;
     private GakubuchiLockConfig config;
     private GakubuchiLockCommand command;
+
+    private PermissionsExBridge pex;
 
     /**
      * プラグインが有効化されたときに呼び出されるメソッド
@@ -41,6 +47,12 @@ public class GakubuchiLockReloaded extends JavaPlugin {
         // メッセージをロードする
         Messages.initialize(getFile(), getDataFolder());
         Messages.reload(config.getLang());
+
+        // PermissionsExをロード
+        if ( getServer().getPluginManager().isPluginEnabled("PermissionsEx") ) {
+            pex = PermissionsExBridge.load(
+                    getServer().getPluginManager().getPlugin("PermissionsEx"));
+        }
 
         // リスナークラスを登録する
         getServer().getPluginManager().registerEvents(
@@ -83,10 +95,26 @@ public class GakubuchiLockReloaded extends JavaPlugin {
     }
 
     /**
+     * PermissionsExへのアクセスブリッジを取得する
+     * @return PermissionsExBridge、ロードされていなければnullになる
+     */
+    public PermissionsExBridge getPex() {
+        return pex;
+    }
+
+    /**
      * このプラグインのJarファイルを返す
      * @return Jarファイル
      */
     protected File getJarFile() {
         return getFile();
+    }
+
+    /**
+     * このプラグインのインスタンスを返す。
+     * @return インスタンス
+     */
+    protected static GakubuchiLockReloaded getInstance() {
+        return (GakubuchiLockReloaded)Bukkit.getPluginManager().getPlugin("GakubuchiLockReloaded");
     }
 }
