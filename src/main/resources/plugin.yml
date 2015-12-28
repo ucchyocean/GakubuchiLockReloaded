@@ -93,6 +93,9 @@ permissions:
   gakubuchilock.entity.break:
     description: Permission to remove none-locked ItemFrame.
     default: true
+  gakubuchilock.entity.interact:
+    description: Permission to interact none-locked ItemFrame.
+    default: true
   gakubuchilock.entity.admin:
     description: Permission to access none-owner locked ItemFrame.
     default: op
@@ -104,6 +107,7 @@ permissions:
     children:
       gakubuchilock.entity.place: true
       gakubuchilock.entity.break: true
+      gakubuchilock.entity.interact: true
       gakubuchilock.entity.admin: true
       gakubuchilock.entity.infinite-place: true
 

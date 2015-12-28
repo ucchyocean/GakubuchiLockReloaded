@@ -290,18 +290,22 @@ public class GakubuchiLockListener implements Listener {
             return;
         }
 
-        // MEMO: このイベントハンドラは、
-        //   額縁の中のアイテムを右クリックされた時に呼び出されるので、
-        //   所有者を確認して、所有者でなければメッセージを表示して操作をキャンセルする。
-
         // ロックデータ取得
         Hanging hanging = (Hanging)event.getRightClicked();
         LockData ld = lockManager.getLockDataByHanging(hanging);
 
+        // ロック情報が無い場合は、権限を確認して、権限が無ければ操作をキャンセルする。
+        if ( ld == null && !event.getPlayer().hasPermission(PERMISSION + ".interact") ) {
+            event.getPlayer().sendMessage(Messages.get("PermissionDeniedInteract"));
+            event.setCancelled(true);
+            return;
+        }
+
+        // ロック情報がある場合は、所有者を確認して、所有者でなければメッセージを表示して操作をキャンセルする。
         if ( ld != null && !ld.getOwnerUuid().equals(event.getPlayer().getUniqueId()) &&
                 !event.getPlayer().hasPermission(PERMISSION + ".admin") ) {
-            event.setCancelled(true);
             event.getPlayer().sendMessage(Messages.get("ItemFrameLocked"));
+            event.setCancelled(true);
             return;
         }
     }

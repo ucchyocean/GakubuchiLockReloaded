@@ -5,6 +5,7 @@
 
 PermissionDeniedPlace: '&cパーミッションが無いため、設置できません。'
 PermissionDeniedBreak: '&cパーミッションが無いため、破壊できません。'
+PermissionDeniedInteract: '&cパーミッションが無いため、操作できません。'
 PermissionDeniedLock: '&cパーミッションが無いため、ロックできません。'
 PermissionDeniedUnlock: '&cパーミッションが無いため、ロック解除できません。'
 PermissionDeniedCommand: '&cパーミッションが無いため、実行できません。'

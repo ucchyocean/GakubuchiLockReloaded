@@ -5,6 +5,7 @@
 
 PermissionDeniedPlace: '&cYou don''t have a permission to place new item frame.'
 PermissionDeniedBreak: '&cYou don''t have a permission to remove item frame.'
+PermissionDeniedInteract: '&cYou don''t have a permission to interact item frame.'
 PermissionDeniedLock: '&cYou don''t have a permission to lock item frame.'
 PermissionDeniedUnlock: '&cYou don''t have a permission to unlock item frame.'
 PermissionDeniedCommand: '&cYou don''t have a permission.'
