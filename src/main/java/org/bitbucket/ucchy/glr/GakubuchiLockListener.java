@@ -19,6 +19,9 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -175,17 +178,7 @@ public class GakubuchiLockListener implements Listener {
             obst = hanging.getLocation().getBlock();
             obst.setType(Material.AIR);
 
-            if ( config.getWallMode() == WallMode.REGEN_STONE ) {
-                // 設置されていたであろう壁の方向に石を作って、壁を復活させる。
-                // イベントをキャンセルする。
-                // ロック情報はそのままにする。
-                Block wall = obst.getRelative(hanging.getAttachedFace());
-                if ( wall.getType() == Material.AIR || wall.isLiquid() ) {
-                    wall.setType(Material.STONE);
-                }
-                event.setCancelled(true);
-
-            } else if ( config.getWallMode() == WallMode.EXTINCTION ) {
+            if ( config.getWallMode() == WallMode.EXTINCTION ) {
                 // hangingエンティティを消去して、ドロップしないようにする。
                 // イベントをキャンセルする。
                 // ロック情報を削除する。
@@ -197,6 +190,16 @@ public class GakubuchiLockListener implements Listener {
                 // バニラ挙動と同様。つまり何もしない。
                 // ロック情報の削除はする。
                 lockManager.removeLockData(hanging);
+
+            } else {
+                // 設置されていたであろう壁の方向に石を作って、壁を復活させる。
+                // イベントをキャンセルする。
+                // ロック情報はそのままにする。
+                Block wall = obst.getRelative(hanging.getAttachedFace());
+                if ( wall.getType() == Material.AIR || wall.isLiquid() ) {
+                    wall.setType(Material.STONE);
+                }
+                event.setCancelled(true);
 
             }
 
@@ -366,7 +369,7 @@ public class GakubuchiLockListener implements Listener {
      * ブロックが置かれたときに呼び出されるイベント
      * @param event
      */
-    @EventHandler
+    @EventHandler(priority=EventPriority.HIGHEST)
     public void onBlockPlace(BlockPlaceEvent event) {
 
         Location location = event.getBlockPlaced().getLocation();
@@ -392,6 +395,72 @@ public class GakubuchiLockListener implements Listener {
             }
             return;
         }
+    }
+
+    /**
+     * ブロックが破壊されたときに呼び出されるイベント
+     * @param event
+     */
+    @EventHandler(priority=EventPriority.HIGHEST)
+    public void onBlockBreak(BlockBreakEvent event) {
+
+        if ( checkBlockBreak(event.getBlock()) ) {
+            if ( config.getWallMode() == WallMode.REGEN_STONE_NO_DROP ) {
+                event.getBlock().setType(Material.AIR);
+            } else {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    /**
+     * ブロックが燃えたときに呼び出されるイベント
+     * @param event
+     */
+    @EventHandler(priority=EventPriority.HIGHEST)
+    public void onBlockBurn(BlockBurnEvent event) {
+
+        if ( checkBlockBreak(event.getBlock()) ) {
+            if ( config.getWallMode() == WallMode.REGEN_STONE_NO_DROP ) {
+                event.getBlock().setType(Material.AIR);
+            } else {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    /**
+     * ブロックが消滅したときに呼び出されるイベント
+     * @param event
+     */
+    @EventHandler(priority=EventPriority.HIGHEST)
+    public void onBlockFade(BlockFadeEvent event) {
+
+        if ( checkBlockBreak(event.getBlock()) ) {
+            if ( config.getWallMode() == WallMode.REGEN_STONE_NO_DROP ) {
+                event.getBlock().setType(Material.AIR);
+            } else {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    private boolean checkBlockBreak(Block block) {
+
+        // チェック対象のモードでなければ、何もしないで終了する
+        if ( config.getWallMode() != WallMode.REGEN_STONE_NO_DROP
+                && config.getWallMode() != WallMode.INVINCIBLE ) {
+            return false;
+        }
+
+        // 対象のブロックに、ロックされた額縁が貼りついているかどうかを確認する。
+        for ( ItemFrame frame : GakubuchiUtility.getAttachedFrameOnBlock(block) ) {
+            if ( lockManager.getLockDataByHanging(frame) != null ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
