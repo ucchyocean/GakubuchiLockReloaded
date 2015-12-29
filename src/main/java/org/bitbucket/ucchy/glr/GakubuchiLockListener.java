@@ -343,11 +343,6 @@ public class GakubuchiLockListener implements Listener {
         Hanging hanging = (Hanging)event.getEntity();
         LockData ld = lockManager.getLockDataByHanging(hanging);
 
-        // ロックデータが無いなら何もしない
-        if ( ld == null ) {
-            return;
-        }
-
         // 攻撃者取得
         Player damager = null;
         if ( event.getDamager() instanceof Player ) {
@@ -358,9 +353,18 @@ public class GakubuchiLockListener implements Listener {
             }
         }
 
-        // 所有者でなくて、管理者でもなければ、操作を禁止する
-        if ( damager == null || (!ld.getOwnerUuid().equals(damager.getUniqueId()) &&
+        if ( ld == null ) {
+            // ロック情報が無い場合は、権限を確認して、権限が無ければ攻撃をキャンセルする。
+            if ( !damager.hasPermission(PERMISSION + ".interact") ) {
+                damager.sendMessage(Messages.get("PermissionDeniedInteract"));
+                event.setCancelled(true);
+                return;
+            }
+
+        } else if ( damager == null || (!ld.getOwnerUuid().equals(damager.getUniqueId()) &&
                 !damager.hasPermission(PERMISSION + ".admin") ) ) {
+            // ロック情報がある場合は、所有者を確認して、所有者でなければメッセージを表示して攻撃をキャンセルする。
+
             event.setCancelled(true);
             if ( damager != null ) {
                 damager.sendMessage(Messages.get("ItemFrameLocked"));
