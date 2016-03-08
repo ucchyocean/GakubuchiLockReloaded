@@ -493,7 +493,7 @@ public class GakubuchiLockListener implements Listener {
                 return true;
             } else {
                 String owner;
-                if ( ld.getOwner() == null ) {
+                if ( ld.getOwner() == null || ld.getOwner().getName() == null ) {
                     owner = Messages.get("UnknownUUID");
                 } else {
                     owner = ld.getOwner().getName();
