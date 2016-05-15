@@ -9,15 +9,15 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Hanging;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 
 /**
@@ -32,8 +32,8 @@ public class LockDataManager {
     /** ロックデータの、プレイヤーUUIDをキーとしたマップ */
     private HashMap<UUID, ArrayList<LockData>> idMap;
 
-    /** ロックデータの、HangingのUUIDをキーとしたマップ */
-    private HashMap<UUID, LockData> hangingMap;
+    /** ロックデータの、Locationをキーとしたマップ */
+    private HashMap<String, LockData> locationMap;
 
     /**
      * コンストラクタ
@@ -68,16 +68,9 @@ public class LockDataManager {
             }
         });
 
-        // 全ワールドに存在する全てのHangingを取得
-        HashMap<String, Collection<Hanging>> hangings =
-                new HashMap<String, Collection<Hanging>>();
-        for ( World world : Bukkit.getWorlds() ) {
-            hangings.put(world.getName(), world.getEntitiesByClass(Hanging.class));
-        }
-
         // 全てのデータをロード
         idMap = new HashMap<UUID, ArrayList<LockData>>();
-        hangingMap = new HashMap<UUID, LockData>();
+        locationMap = new HashMap<String, LockData>();
 
         for ( File file : files ) {
 
@@ -91,11 +84,11 @@ public class LockDataManager {
             UUID uuid = UUID.fromString(key);
 
             // データをロードする
-            idMap.put(uuid, loadLockData(file, uuid, hangings));
+            idMap.put(uuid, loadLockData(file, uuid));
 
-            // Hangingマップにも展開する
+            // Locationマップにも展開する
             for ( LockData ld : idMap.get(uuid) ) {
-                hangingMap.put(ld.getHanging().getUniqueId(), ld);
+                locationMap.put(getDescriptionFromLocation(ld.getLocation()), ld);
             }
         }
     }
@@ -103,12 +96,10 @@ public class LockDataManager {
     /**
      * プレイヤーファイルから、ロックデータをロードする
      * @param file プレイヤーファイル
-     * @param uuid プレイヤーのUUID（あらかじめ取得したもの）
-     * @param hangings 全ワールドのHanging（あらかじめ取得したもの）
+     * @param uuid プレイヤーのUUID
      * @return ロードされたロックデータ
      */
-    private ArrayList<LockData> loadLockData(File file, UUID uuid,
-            HashMap<String, Collection<Hanging>> hangings) {
+    private ArrayList<LockData> loadLockData(File file, UUID uuid) {
 
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
         ArrayList<LockData> data = new ArrayList<LockData>();
@@ -122,14 +113,9 @@ public class LockDataManager {
                 continue;
             }
 
-            Hanging hanging = getHangingFromLocation(location, hangings);
             long time = config.getLong(key, -1);
 
-            if ( hanging == null ) {
-                continue;
-            }
-
-            data.add(new LockData(uuid, hanging, time));
+            data.add(new LockData(uuid, location, time));
         }
 
         return data;
@@ -154,7 +140,13 @@ public class LockDataManager {
 
         YamlConfiguration config = new YamlConfiguration();
 
-        config.set("name", Bukkit.getOfflinePlayer(uuid).getName());
+        String name;
+        if ( Bukkit.getOfflinePlayer(uuid) != null ) {
+            name = Bukkit.getOfflinePlayer(uuid).getName();
+        } else {
+            name = Messages.get("UnknownUUID");
+        }
+        config.set("name", name);
 
         ArrayList<LockData> datas = idMap.get(uuid);
         for ( LockData data : datas ) {
@@ -170,24 +162,36 @@ public class LockDataManager {
     }
 
     /**
-     * 指定されたHangingから、ロックデータを取得する
-     * @param hanging Hanging
+     * 指定されたItemFrameから、ロックデータを取得する
+     * @param frame 額縁
      * @return ロックデータ
      */
-    public LockData getLockDataByHanging(Hanging hanging) {
-        return hangingMap.get(hanging.getUniqueId());
+    public LockData getLockDataByFrame(ItemFrame frame) {
+        if ( frame == null ) return null;
+        return locationMap.get(getDescriptionFromLocation(frame.getLocation()));
+    }
+
+    /**
+     * 全てのロックデータを取得する
+     * @return 全てのロックデータ
+     */
+    public List<LockData> getAllLockData() {
+        return new ArrayList<LockData>(locationMap.values());
     }
 
     /**
      * ロックデータを追加する
      * @param uuid オーナープレイヤー
-     * @param hanging Hanging
+     * @param frame 額縁
      */
-    public void addLockData(UUID uuid, Hanging hanging) {
+    public void addLockData(UUID uuid, ItemFrame frame) {
+
+        if ( uuid == null || frame == null ) return;
 
         // 既にロックデータが存在する場合は、古いデータを削除する
-        if ( hangingMap.containsKey(hanging.getUniqueId()) ) {
-            removeLockData(hanging);
+        String locDesc = getDescriptionFromLocation(frame.getLocation());
+        if ( locationMap.containsKey(locDesc) ) {
+            removeLockData(frame);
         }
 
         // オーナープレイヤーのデータが無いなら新規作成する
@@ -196,9 +200,9 @@ public class LockDataManager {
         }
 
         // ロックデータ追加
-        LockData data = new LockData(uuid, hanging, System.currentTimeMillis());
+        LockData data = new LockData(uuid, frame.getLocation(), System.currentTimeMillis());
         idMap.get(uuid).add(data);
-        hangingMap.put(hanging.getUniqueId(), data);
+        locationMap.put(locDesc, data);
 
         // データを保存
         saveData(uuid);
@@ -206,19 +210,47 @@ public class LockDataManager {
 
     /**
      * ロックデータを削除する
-     * @param hanging 削除するHanging
+     * @param frame 削除する額縁
      */
-    public void removeLockData(Hanging hanging) {
+    public void removeLockData(ItemFrame frame) {
+
+        if ( frame == null ) return;
 
         // 既にロックデータが無い場合は、何もしない
-        if ( !hangingMap.containsKey(hanging.getUniqueId()) ) {
+        String locDesc = getDescriptionFromLocation(frame.getLocation());
+        if ( !locationMap.containsKey(locDesc) ) {
             return;
         }
 
-        LockData ld = hangingMap.get(hanging.getUniqueId());
+        LockData ld = locationMap.get(locDesc);
 
         // 削除を実行
-        hangingMap.remove(hanging.getUniqueId());
+        locationMap.remove(locDesc);
+        if ( idMap.containsKey(ld.getOwnerUuid()) ) {
+            idMap.get(ld.getOwnerUuid()).remove(ld);
+        }
+
+        // データを保存
+        saveData(ld.getOwnerUuid());
+    }
+
+    /**
+     * ロックデータを削除する
+     * @param locationDescription 削除する額縁の位置情報文字列
+     */
+    public void removeLockData(String locationDescription) {
+
+        if ( locationDescription == null ) return;
+
+        // 既にロックデータが無い場合は、何もしない
+        if ( !locationMap.containsKey(locationDescription) ) {
+            return;
+        }
+
+        LockData ld = locationMap.get(locationDescription);
+
+        // 削除を実行
+        locationMap.remove(locationDescription);
         if ( idMap.containsKey(ld.getOwnerUuid()) ) {
             idMap.get(ld.getOwnerUuid()).remove(ld);
         }
@@ -264,29 +296,6 @@ public class LockDataManager {
         }
 
         return limit;
-    }
-
-    /**
-     * 指定された場所に存在するHangingを取得する
-     * @param location 場所
-     * @param hangings 全ワールドのHanging（あらかじめ取得したもの）
-     * @return Hanging、指定した場所に存在しなければnull
-     */
-    private Hanging getHangingFromLocation(Location location,
-            HashMap<String, Collection<Hanging>> hangings) {
-
-        if ( !hangings.containsKey(location.getWorld().getName()) ) {
-            return null;
-        }
-
-        for ( Hanging hanging : hangings.get(location.getWorld().getName()) ) {
-            if ( location.getBlockX() == hanging.getLocation().getBlockX() &&
-                    location.getBlockY() == hanging.getLocation().getBlockY() &&
-                    location.getBlockZ() == hanging.getLocation().getBlockZ() ) {
-                return hanging;
-            }
-        }
-        return null;
     }
 
     /**

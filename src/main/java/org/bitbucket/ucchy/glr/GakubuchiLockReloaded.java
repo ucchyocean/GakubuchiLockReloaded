@@ -60,6 +60,12 @@ public class GakubuchiLockReloaded extends JavaPlugin {
 
         // コマンドクラスを作成する
         command = new GakubuchiLockCommand(this);
+
+        // クリーンアップタスクを登録する
+        if ( config.getCleanupTaskDelay() >= 0 ) {
+            LockDataCleanupTask task = new LockDataCleanupTask();
+            task.runTaskLater(this, config.getCleanupTaskDelay() * 60 * 20);
+        }
     }
 
     /**

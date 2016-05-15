@@ -10,7 +10,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Hanging;
 
 /**
  * ロックデータ
@@ -21,8 +20,8 @@ public class LockData {
     /** ロック所有者のUUID */
     private UUID uuid;
 
-    /** ロック対象のHanging */
-    private Hanging hanging;
+    /** ロック対象の位置 */
+    private Location location;
 
     /** ロック日時 */
     private long time;
@@ -30,12 +29,12 @@ public class LockData {
     /**
      * コンストラクタ
      * @param uuid ロック所有者のUUID
-     * @param hanging ロック対象のHanging
+     * @param location ロック対象の位置
      * @param time ロック日時
      */
-    public LockData(UUID uuid, Hanging hanging, long time) {
+    public LockData(UUID uuid, Location location, long time) {
         this.uuid = uuid;
-        this.hanging = hanging;
+        this.location = location;
         this.time = time;
     }
 
@@ -44,13 +43,6 @@ public class LockData {
      */
     public UUID getOwnerUuid() {
         return uuid;
-    }
-
-    /**
-     * @return hanging
-     */
-    public Hanging getHanging() {
-        return hanging;
     }
 
     /**
@@ -66,7 +58,7 @@ public class LockData {
      * @return 場所
      */
     public Location getLocation() {
-        return hanging.getLocation();
+        return location;
     }
 
     /**
@@ -82,6 +74,6 @@ public class LockData {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        return String.format("LockData{uuid=%s,hanging=%s}", uuid, hanging);
+        return String.format("LockData{uuid=%s,location=%s}", uuid, location);
     }
 }

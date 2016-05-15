@@ -21,6 +21,8 @@ public class GakubuchiLockConfig {
     private int itemFrameLimit;
     private WallMode wallMode;
     private boolean autoLock;
+    private int cleanupTaskDelay;
+    private boolean cleanupTaskLog;
 
     /**
      * コンストラクタ
@@ -53,8 +55,11 @@ public class GakubuchiLockConfig {
         lang = conf.getString("lang", "ja");
         itemFrameLimit = conf.getInt("itemFrameLimit", 100);
         wallMode = WallMode.fromString(
-                conf.getString("wallMode"), WallMode.REGEN_STONE);
+                conf.getString("wallMode"), WallMode.REGEN_STONE_NO_DROP);
         autoLock = conf.getBoolean("autoLock", true);
+
+        cleanupTaskDelay = conf.getInt("cleanupTaskDelay", 1);
+        cleanupTaskLog = conf.getBoolean("cleanupTaskLog", true);
     }
 
     /**
@@ -83,5 +88,19 @@ public class GakubuchiLockConfig {
      */
     public boolean isAutoLock() {
         return autoLock;
+    }
+
+    /**
+     * @return cleanupTaskDelay
+     */
+    public int getCleanupTaskDelay() {
+        return cleanupTaskDelay;
+    }
+
+    /**
+     * @return cleanupTaskLog
+     */
+    public boolean isCleanupTaskLog() {
+        return cleanupTaskLog;
     }
 }

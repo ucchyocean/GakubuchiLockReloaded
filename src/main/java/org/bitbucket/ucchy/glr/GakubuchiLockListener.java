@@ -99,7 +99,7 @@ public class GakubuchiLockListener implements Listener {
             }
 
             // 新しいロックデータを登録する
-            lockManager.addLockData(event.getPlayer().getUniqueId(), hanging);
+            lockManager.addLockData(event.getPlayer().getUniqueId(), (ItemFrame)hanging);
             event.getPlayer().sendMessage(Messages.get("Locked"));
         }
     }
@@ -111,12 +111,12 @@ public class GakubuchiLockListener implements Listener {
     @EventHandler(priority=EventPriority.HIGHEST)
     public void onHangingBreak(HangingBreakEvent event) {
 
-        Hanging hanging = event.getEntity();
-
         // 額縁でなければ無視する
-        if ( !(hanging instanceof ItemFrame) ) {
+        if ( !(event.getEntity() instanceof ItemFrame) ) {
             return;
         }
+
+        ItemFrame frame = (ItemFrame)event.getEntity();
 
         // エンティティによる破壊なら、HangingBreakByEntityEventで処理するので、
         // ここでは何もしない。
@@ -125,7 +125,7 @@ public class GakubuchiLockListener implements Listener {
         }
 
         // 対象物のロックデータを取得する
-        LockData ld = lockManager.getLockDataByHanging(hanging);
+        LockData ld = lockManager.getLockDataByFrame(frame);
 
         // ロックデータが無い場合はイベントを無視する
         if ( ld == null ) {
@@ -153,7 +153,7 @@ public class GakubuchiLockListener implements Listener {
             // なぜかOBSTRUCTIONではなくPHYSICSになる（不具合？）。
 
             // hangingにかぶさる位置のブロックをAIRにし、イベントをキャンセルする
-            Block obst = hanging.getLocation().getBlock();
+            Block obst = frame.getLocation().getBlock();
             obst.setType(Material.AIR);
 
             event.setCancelled(true);
@@ -175,27 +175,27 @@ public class GakubuchiLockListener implements Listener {
             // PHYSICS、DEFAULTは、ここでまとめて処理する。
 
             // Hangingにかぶっているブロックがある場合は、AIRにして消滅させる。
-            obst = hanging.getLocation().getBlock();
+            obst = frame.getLocation().getBlock();
             obst.setType(Material.AIR);
 
             if ( config.getWallMode() == WallMode.EXTINCTION ) {
                 // hangingエンティティを消去して、ドロップしないようにする。
                 // イベントをキャンセルする。
                 // ロック情報を削除する。
-                lockManager.removeLockData(hanging);
-                hanging.remove();
+                lockManager.removeLockData(frame);
+                frame.remove();
                 event.setCancelled(true);
 
             } else if ( config.getWallMode() == WallMode.ITEM_DROP ) {
                 // バニラ挙動と同様。つまり何もしない。
                 // ロック情報の削除はする。
-                lockManager.removeLockData(hanging);
+                lockManager.removeLockData(frame);
 
             } else {
                 // 設置されていたであろう壁の方向に石を作って、壁を復活させる。
                 // イベントをキャンセルする。
                 // ロック情報はそのままにする。
-                Block wall = obst.getRelative(hanging.getAttachedFace());
+                Block wall = obst.getRelative(frame.getAttachedFace());
                 if ( wall.getType() == Material.AIR || wall.isLiquid() ) {
                     wall.setType(Material.STONE);
                 }
@@ -214,17 +214,17 @@ public class GakubuchiLockListener implements Listener {
     @EventHandler(priority=EventPriority.HIGHEST)
     public void onHangingBreakByEntity(HangingBreakByEntityEvent event) {
 
-        Hanging hanging = event.getEntity();
-
         // 額縁でなければ無視する
-        if ( !(hanging instanceof ItemFrame) ) {
+        if ( !(event.getEntity() instanceof ItemFrame) ) {
             return;
         }
+
+        ItemFrame frame = (ItemFrame)event.getEntity();
 
         // 事前コマンドが実行されている場合の処理
         if ( event.getRemover() instanceof Player ) {
             Player damager = (Player)event.getRemover();
-            if ( processPrecommand(damager, hanging) ) {
+            if ( processPrecommand(damager, frame) ) {
                 event.setCancelled(true);
                 return;
             }
@@ -233,7 +233,7 @@ public class GakubuchiLockListener implements Listener {
         // ==== 以下、額縁に対する攻撃の保護処理 ====
 
         // 対象物のロックデータを取得する
-        LockData ld = lockManager.getLockDataByHanging(hanging);
+        LockData ld = lockManager.getLockDataByFrame(frame);
 
         // ロックデータが無い場合
         if ( ld == null ) {
@@ -272,7 +272,7 @@ public class GakubuchiLockListener implements Listener {
         }
 
         // ロック情報を削除する
-        lockManager.removeLockData(hanging);
+        lockManager.removeLockData(frame);
 
         // メッセージを出す
         remover.sendMessage(Messages.get("LockRemoved"));
@@ -291,8 +291,8 @@ public class GakubuchiLockListener implements Listener {
         }
 
         // ロックデータ取得
-        Hanging hanging = (Hanging)event.getRightClicked();
-        LockData ld = lockManager.getLockDataByHanging(hanging);
+        ItemFrame frame = (ItemFrame)event.getRightClicked();
+        LockData ld = lockManager.getLockDataByFrame(frame);
 
         // ロック情報が無い場合は、権限を確認して、権限が無ければ操作をキャンセルする。
         if ( ld == null && !event.getPlayer().hasPermission(PERMISSION + ".interact") ) {
@@ -325,8 +325,8 @@ public class GakubuchiLockListener implements Listener {
         // 事前コマンドが実行されている場合の処理
         if ( event.getDamager() instanceof Player ) {
             Player damager = (Player)event.getDamager();
-            Hanging hanging = (Hanging)event.getEntity();
-            if ( processPrecommand(damager, hanging) ) {
+            ItemFrame frame = (ItemFrame)event.getEntity();
+            if ( processPrecommand(damager, frame) ) {
                 event.setCancelled(true);
                 return;
             }
@@ -340,8 +340,8 @@ public class GakubuchiLockListener implements Listener {
         //   所有者を確認して、所有者でなければメッセージを表示して操作をキャンセルする。
 
         // ロックデータ取得
-        Hanging hanging = (Hanging)event.getEntity();
-        LockData ld = lockManager.getLockDataByHanging(hanging);
+        ItemFrame frame = (ItemFrame)event.getEntity();
+        LockData ld = lockManager.getLockDataByFrame(frame);
 
         // 攻撃者取得
         Player damager = null;
@@ -383,12 +383,12 @@ public class GakubuchiLockListener implements Listener {
         Location location = event.getBlockPlaced().getLocation();
 
         // 指定された場所にItemFrameがないか確認する
-        Hanging hanging = GakubuchiUtility.getFrameFromLocation(location);
+        ItemFrame frame = GakubuchiUtility.getFrameFromLocation(location);
 
-        if ( hanging != null ) {
+        if ( frame != null ) {
 
             // ロックデータ取得
-            LockData ld = lockManager.getLockDataByHanging(hanging);
+            LockData ld = lockManager.getLockDataByFrame(frame);
 
             // ロックデータが無いなら何もしない
             if ( ld == null ) {
@@ -463,7 +463,7 @@ public class GakubuchiLockListener implements Listener {
 
         // 対象のブロックに、ロックされた額縁が貼りついているかどうかを確認する。
         for ( ItemFrame frame : GakubuchiUtility.getAttachedFrameOnBlock(block) ) {
-            if ( lockManager.getLockDataByHanging(frame) != null ) {
+            if ( lockManager.getLockDataByFrame(frame) != null ) {
                 return true;
             }
         }
@@ -474,10 +474,10 @@ public class GakubuchiLockListener implements Listener {
     /**
      * 事前実行されたコマンドを処理する
      * @param player 実行したプレイヤー
-     * @param hanging 実行対象の額縁
+     * @param frame 実行対象の額縁
      * @return コマンド実行したかどうか
      */
-    private boolean processPrecommand(Player player, Hanging hanging) {
+    private boolean processPrecommand(Player player, ItemFrame frame) {
 
         if ( player.hasMetadata(GakubuchiLockCommand.META_INFO_COMMAND) ) {
 
@@ -486,7 +486,7 @@ public class GakubuchiLockListener implements Listener {
             }
 
             // ロックデータ取得
-            LockData ld = lockManager.getLockDataByHanging(hanging);
+            LockData ld = lockManager.getLockDataByFrame(frame);
 
             if ( ld == null ) {
                 player.sendMessage(Messages.get("ItemFrameUnlocked"));
@@ -520,7 +520,7 @@ public class GakubuchiLockListener implements Listener {
             }
 
             // ロックデータ取得
-            LockData ld = lockManager.getLockDataByHanging(hanging);
+            LockData ld = lockManager.getLockDataByFrame(frame);
 
             if ( ld == null ) {
 
@@ -533,7 +533,7 @@ public class GakubuchiLockListener implements Listener {
                 }
 
                 // 新しいロックデータを登録する
-                lockManager.addLockData(player.getUniqueId(), hanging);
+                lockManager.addLockData(player.getUniqueId(), frame);
                 player.sendMessage(Messages.get("Locked"));
                 return true;
 
@@ -549,7 +549,7 @@ public class GakubuchiLockListener implements Listener {
             }
 
             // ロックデータ取得
-            LockData ld = lockManager.getLockDataByHanging(hanging);
+            LockData ld = lockManager.getLockDataByFrame(frame);
 
             if ( ld == null ) {
                 player.sendMessage(Messages.get("ItemFrameUnlocked"));
@@ -565,7 +565,7 @@ public class GakubuchiLockListener implements Listener {
                 }
 
                 // 新しいロックデータを登録する
-                lockManager.removeLockData(hanging);
+                lockManager.removeLockData(frame);
                 player.sendMessage(Messages.get("LockRemoved"));
                 return true;
 
@@ -592,7 +592,7 @@ public class GakubuchiLockListener implements Listener {
 
             // これから動くブロックに、ロックされた額縁が貼りついているなら、イベントをキャンセルする。
             for ( ItemFrame frame : GakubuchiUtility.getAttachedFrameOnBlock(block) ) {
-                if ( lockManager.getLockDataByHanging(frame) != null ) {
+                if ( lockManager.getLockDataByFrame(frame) != null ) {
                     event.setCancelled(true);
                     return;
                 }
@@ -601,7 +601,7 @@ public class GakubuchiLockListener implements Listener {
             // これから動くブロックの移動先に、ロックされた額縁が貼りついているなら、イベントをキャンセルする。
             Location location = block.getRelative(event.getDirection()).getLocation();
             ItemFrame frame = GakubuchiUtility.getFrameFromLocation(location);
-            if ( frame != null && lockManager.getLockDataByHanging(frame) != null ) {
+            if ( frame != null && lockManager.getLockDataByFrame(frame) != null ) {
                 event.setCancelled(true);
                 return;
             }
@@ -618,7 +618,7 @@ public class GakubuchiLockListener implements Listener {
         // 動いたブロックのところに額縁があるなら、イベントをキャンセルする。
         Block block = event.getBlock().getRelative(event.getDirection());
         for ( ItemFrame frame : GakubuchiUtility.getAttachedFrameOnBlock(block) ) {
-            if ( lockManager.getLockDataByHanging(frame) != null ) {
+            if ( lockManager.getLockDataByFrame(frame) != null ) {
                 event.setCancelled(true);
                 return;
             }
