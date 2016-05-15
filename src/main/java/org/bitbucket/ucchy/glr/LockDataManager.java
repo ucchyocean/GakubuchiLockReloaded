@@ -72,6 +72,9 @@ public class LockDataManager {
         idMap = new HashMap<UUID, ArrayList<LockData>>();
         locationMap = new HashMap<String, LockData>();
 
+        // filesがnullなら、何もしない。
+        if ( files == null ) return;
+
         for ( File file : files ) {
 
             // 後ろの4文字を削って拡張子を抜く
