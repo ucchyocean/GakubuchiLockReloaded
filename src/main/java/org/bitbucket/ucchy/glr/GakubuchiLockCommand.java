@@ -3,6 +3,7 @@ package org.bitbucket.ucchy.glr;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -74,6 +75,8 @@ public class GakubuchiLockCommand implements TabExecutor {
             return doRemove(sender, command, label, args);
         } else if ( args[0].equalsIgnoreCase("persist") ) {
             return doPersist(sender, command, label, args);
+        } else if ( args[0].equalsIgnoreCase("cleanup") ) {
+            return doCleanup(sender, command, label, args);
         } else if ( args[0].equalsIgnoreCase("reload") ) {
             return doReload(sender, command, label, args);
         }
@@ -303,6 +306,45 @@ public class GakubuchiLockCommand implements TabExecutor {
             }
         }
 
+        return true;
+    }
+
+    /**
+     * cleanupコマンドを実行する
+     * @param sender 実行者
+     * @param command コマンド
+     * @param label ラベル
+     * @param args 引数
+     * @return コマンド実行が成功したかどうか（falseを返すとusageを表示する）
+     */
+    private boolean doCleanup(CommandSender sender, Command command, String label, String[] args) {
+
+        if  ( !sender.hasPermission(PERMISSION + ".cleanup") ) {
+            sender.sendMessage(Messages.get("PermissionDeniedCommand"));
+            return true;
+        }
+
+        // ワールドが存在するか確認する
+        String worldName = "world";
+        if ( args.length >= 2 ) {
+            worldName = args[1];
+        }
+        if ( Bukkit.getWorld(worldName) == null ) {
+            sender.sendMessage(Messages.get("WorldNotFound"));
+            return true;
+        }
+
+        // ワールドにロックデータが存在するか確認する
+        int num = lockManager.getWorldLockDataNum(worldName);
+        if ( num <= 0 ) {
+            sender.sendMessage(Messages.get("WorldLockDataNotFound"));
+            return true;
+        }
+
+        // データをクリーンアップする
+        lockManager.cleanupWorldLockData(worldName);
+        sender.sendMessage(Messages.getMessageWithKeywords("InformationCleanup",
+                new String[]{"%world", "%num"}, new String[]{worldName, num + ""}));
         return true;
     }
 

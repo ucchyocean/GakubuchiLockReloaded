@@ -16,6 +16,8 @@ ItemFrameUnlocked: '&cThis item frame is not locked.'
 ItemFrameAlreadyLocked: '&cThis item frame is locked already.'
 ItemFrameNotOwner: '&cYou cannot unlock, because this item frame is owned by the other player.'
 NotInGame: '&cThis command can be run only in game.'
+WorldNotFound: '&cThe specified world is not found.'
+WorldLockDataNotFound: '&cThere are not any lock data in the specified world.'
 
 PersistMode: '&bYou entered a persist mode. To exit mode, please run "/gpersist" command.'
 PersistOff: '&bYou exited a persist mode.'
@@ -26,6 +28,7 @@ PunchUnlock: '&bPunch the item frame to unlock.'
 LockRemoved: '&aItem frame lock was removed.'
 Locked: '&aItem frame was locked'
 
+InformationCleanup: '&a%num lock data(s) of %world world are deleted.'
 InformationReload: '&aAll data were reloaded.'
 
 InformationOwner: 'Owner: &a%player&r(&a%uuid&r)'

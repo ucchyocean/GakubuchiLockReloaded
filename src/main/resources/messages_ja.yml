@@ -16,6 +16,8 @@ ItemFrameUnlocked: '&cこの額縁はロックされていません。'
 ItemFrameAlreadyLocked: '&cこの額縁は既にロックされています。'
 ItemFrameNotOwner: '&cこの額縁は他の人に所有されているため、ロック解除できません。'
 NotInGame: '&cこのコマンドはゲーム外からは実行できません。'
+WorldNotFound: '&c指定されたワールドが見つかりません。'
+WorldLockDataNotFound: '&c指定されたワールドにロックデータが見つかりません。'
 
 PersistMode: '&b連続モードになりました。連続モードを解除するには、/gpersist を実行してください。'
 PersistOff: '&b連続モードを解除しました。'
@@ -26,6 +28,7 @@ PunchUnlock: '&bロックを削除する額縁をパンチしてください。'
 LockRemoved: '&a額縁のロックを削除しました。'
 Locked: '&a額縁をロックしました。'
 
+InformationCleanup: '&a%worldのロックデータ%num個を全て削除しました。'
 InformationReload: '&aデータを再読み込みしました。'
 
 InformationOwner: 'オーナー: &a%player&r(&a%uuid&r)'

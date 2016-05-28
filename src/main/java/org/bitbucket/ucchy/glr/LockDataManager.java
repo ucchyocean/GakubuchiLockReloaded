@@ -302,6 +302,55 @@ public class LockDataManager {
     }
 
     /**
+     * 指定したワールドにあるロックデータの個数を返す
+     * @param world ワールド名
+     * @return ロックデータの個数
+     */
+    public int getWorldLockDataNum(String world) {
+
+        int count = 0;
+        for ( String key : locationMap.keySet() ) {
+            if ( getWorldNameFromDescription(key).equals(world) ) count++;
+        }
+        return count;
+    }
+
+    /**
+     * 指定したワールドにあるロックデータをクリーンアップする
+     * @param world ワールド名
+     */
+    public void cleanupWorldLockData(String world) {
+
+        ArrayList<LockData> dataList = new ArrayList<LockData>();
+        ArrayList<UUID> ownerList = new ArrayList<UUID>();
+
+        // 対象のワールドにあるロックデータをリスト化
+        for ( String key : locationMap.keySet() ) {
+            if ( getWorldNameFromDescription(key).equals(world) ) {
+                LockData data = locationMap.get(key);
+                dataList.add(data);
+                if ( !ownerList.contains(data.getOwnerUuid()) ) {
+                    ownerList.add(data.getOwnerUuid());
+                }
+            }
+        }
+
+        // 削除を実行
+        for ( LockData data : dataList ) {
+            String locDesc = getDescriptionFromLocation(data.getLocation());
+            locationMap.remove(locDesc);
+            if ( idMap.containsKey(data.getOwnerUuid()) ) {
+                idMap.get(data.getOwnerUuid()).remove(data);
+            }
+        }
+
+        // データを保存する
+        for ( UUID uuid : ownerList ) {
+            saveData(uuid);
+        }
+    }
+
+    /**
      * Locationを文字列に変換する
      * @param location Location
      * @return 変換後の文字列
@@ -346,6 +395,30 @@ public class LockDataManager {
         }
 
         return new Location(world, x, y, z);
+    }
+
+    /**
+     * Location文字列からワールド名のみを取得する
+     * @param desc 文字列
+     * @return ワールド名
+     */
+    private static String getWorldNameFromDescription(String desc) {
+
+        String[] temp = desc.split("_");
+        if ( temp.length < 4 ) {
+            return "";
+        }
+
+        int offset = temp.length - 4;
+        String temp_x = temp[offset + 1];
+        String temp_y = temp[offset + 2];
+        String temp_z = temp[offset + 3];
+        if ( !isDigit(temp_x) || !isDigit(temp_y) || !isDigit(temp_z) ) {
+            return "";
+        }
+
+        String suffix = temp_x + "_" + temp_y + "_" + temp_z;
+        return desc.substring(0, desc.lastIndexOf(suffix) - 1);
     }
 
     /**

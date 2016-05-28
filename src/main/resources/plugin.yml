@@ -15,6 +15,7 @@ commands:
            /<command> private - Lock item frame.
            /<command> remove - Unlock item frame.
            /<command> persist [lock|unlock|info|off] - Lock/Unlock item frame repeatedly.
+           /<command> cleanup (WorldName) - Cleaup all lock datas of the specified world.
            /<command> reload - Reload all of data.
     permission: gakubuchilock.command
     permission-message: 'You don''t have a permission "<permission>".'
@@ -73,6 +74,9 @@ permissions:
   gakubuchilock.command.persist:
     description: Permission of persist command.
     default: true
+  gakubuchilock.command.cleanup:
+    description: Permission of cleanup command.
+    default: op
   gakubuchilock.command.reload:
     description: Permission of reload command.
     default: op
@@ -85,6 +89,7 @@ permissions:
       gakubuchilock.command.private: true
       gakubuchilock.command.remove: true
       gakubuchilock.command.persist: true
+      gakubuchilock.command.cleanup: true
       gakubuchilock.command.reload: true
 
   gakubuchilock.entity.place:

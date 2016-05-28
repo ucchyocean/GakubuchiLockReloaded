@@ -58,7 +58,7 @@ public class GakubuchiLockConfig {
                 conf.getString("wallMode"), WallMode.REGEN_STONE_NO_DROP);
         autoLock = conf.getBoolean("autoLock", true);
 
-        cleanupTaskDelay = conf.getInt("cleanupTaskDelay", 1);
+        cleanupTaskDelay = conf.getInt("cleanupTaskDelay", -1);
         cleanupTaskLog = conf.getBoolean("cleanupTaskLog", true);
     }
 
